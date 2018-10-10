@@ -8,13 +8,13 @@ Created on Wed Sep  6 14:06:03 2017
 """
 
 
-import math
-from pyvisa import constants
+# import math
+# from pyvisa import constants
 
 from lantz import Action, Feat
-#from lantz.messagebased import MessageBasedDriver
+# from lantz.messagebased import MessageBasedDriver
 from lantz.drivers.legacy.serial import SerialDriver
-from lantz import Q_
+# from lantz import Q_
 
 
 class PCZPiezo(SerialDriver):
@@ -24,17 +24,17 @@ class PCZPiezo(SerialDriver):
 #    DEFAULTS = {'ASRL': {'write_termination': '\r',
 #                         'read_termination': '\r',
 #                         'baud_rate': 19200,
-##                         'bytesize': 8,
+#                         'bytesize': 8,
 #                         'parity': constants.Parity.none,
 #                         'stop_bits': constants.StopBits.one,
 #                         'encoding': 'ascii',
 #                         }}
 
-    #TODO: add this in PyVISA
+    # TODO: add this in PyVISA
     # flow control flags
-    #RTSCTS = False
-    #DSRDTR = False
-    #XONXOFF = False
+    # RTSCTS = False
+    # DSRDTR = False
+    # XONXOFF = False
 
     ENCODING = 'ascii'
 
