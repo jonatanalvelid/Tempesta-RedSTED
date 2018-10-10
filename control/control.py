@@ -49,12 +49,13 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
     liveviewEnds = QtCore.pyqtSignal()
 
     def __init__(self, bluelaser, violetlaser, uvlaser, slm, scanZ,
-                 webcamFocusLock, webcamWidefield, *args, **kwargs):
+                 webcamFocusLock, webcamWidefield, aotf, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.violetlaser = violetlaser
         self.slm = slm
         self.scanZ = scanZ
+        self.aotf = aotf
         self.filewarning = FileWarning()
 
         self.s = Q_(1, 's')

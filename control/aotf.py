@@ -44,8 +44,7 @@ class AAAOTF(SerialDriver):
 
     @Feat(read_once=True)
     def idn(self):
-        """Get information of system, such as name, number of axis,...
-        maximum stroke etc. """
+        """Get the product ID of the AOTF. """
         return self.query('q')
 
     def initialize(self):
@@ -53,7 +52,7 @@ class AAAOTF(SerialDriver):
 
     # POWER ADJUSTMENT
 
-    @Feat(units='micrometer')
+    @Feat()
     def power(self, channel):
         """ Power in dBm. """
         return float(self.query('S').split()[0])
@@ -63,16 +62,31 @@ class AAAOTF(SerialDriver):
         """ Power adjustment for channel X, from 0 to 1023. """
         self.query('L' + str(channel) + 'P' + str(round(value*1023)))
 
+    # FREQUENCY ADJUSTMENT
+
+    @Feat
+    def frequency(self, channel):
+        """ Frequnecy in MHz. """
+        return float(self.query('S').split()[0])
+
+    @frequency.setter
+    def frequency(self, channel, value):
+        """ Frequency adjustment for channel X, from 0 to 1023. """
+        self.query('L' + str(channel) + 'F' + str(value))
+
     # CONTROL/STATUS
 
+    @Action()
     def channelMode(self, channel, setting):
         """ Set channel to internal (0) or external (1) operation mode. """
         self.query('L' + str(channel) + 'I' + str(setting))
 
+    @Action()
     def driverMode(self, setting):
         """ Set global to internal (0) or external (1) operation mode. """
         self.query('I' + str(setting))
 
+    @Action()
     def channelOn(self, channel, setting):
         """ Turn channel on (1) or off (0). """
         self.query('L' + str(channel) + 'O' + str(setting))

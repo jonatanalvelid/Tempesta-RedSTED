@@ -350,127 +350,20 @@ class CameraTIS(mockers.MockHamamatsu):
     def show_dialog(self):
         self.cam.show_property_dialog()
 
-        
+
 class AOTF(object):
-    """class used to control the AOTF from AA Optoelectronics via a
-    RS232 interface. The commands are defined in the AOTF manual,
-    must be --- (binary) and end with an --- (LF) statement.
-
-    :param string port: specifies the name of the port to which the AOTF
-    is connected (usually COM10).
-    """
-
-    def __init__(self, port="COMXX"):
-        self.serial_port = None
-        # self.info = None      # Contains informations about the different methods of the laser.
-        self.power_setting561 = 0    # To change the 561 power with python
-        self.power_setting640 = 0    # To change the 640 power with python
-        self.triggerMode = 0        # Trigger=TTL input
-        self.enabled_state561 = False    # Laser initially off
-        self.enabled_state640 = False    # Laser initially off
-        self.max_setting = 1  # Maximum setting
-        self.uW = Q_(1, 'uW')
-
+    def __new__(cls, *args):
         try:
-            import serial
-            self.serial_port = serial.Serial(
-                 port=port,
-                 baudrate=57600,
-                 stopbits=serial.STOPBITS_ONE,
-                 bytesize=serial.EIGHTBITS,
-                 parity=serial.PARITY_NONE
-                 )
-            
-            self.setPowerSetting()
-            self.setPowerSetting(0, self.power_setting561)
-            self.setPowerSetting(1, self.power_setting561)
-            self.power_setpoint = 0
-            self.power_sp = 0*self.uW
-            self.setTriggerSource(self.triggerMode)
+            from control.aotf import AAAOTF
+            aotf = AAAOTF(*args)
+            aotf.initialize()
+            return aotf
         except:
-            print("Channel Busy")
-            self = mockers.MockLaser()
+            return mockers.MockAAAOTF()
 
-    @property
-    def idn(self):
-        return 'AA Optoelectronics AOTF'
-
-    # LASER'S CONTROL MODE AND SET POINT
-    @property
-    def power_sp(self):
-        """To handle output power set point (mW)
-        """
-        return self.power_setpoint * 100 * self.mW
-
-    @power_sp.setter
-    def power_sp(self, channel, value):
-        """Handles output power. Sends a RS232 command to the laser specifying the new intensity."""
-        if(value < 0):
-            value = 0
-        if(value > self.intensity_max):
-            value = self.intensity_max  # This is the maximum value possible
-        # NEED TO MEASURE BELOW CURVE FOR BOTH LASERS
-        value = value*22.00  # Conversion from uW to dB, make this a more fancy function later, taking into account the non-linear transmission vs dBm
-        value = round(value, 3)
-        cmd = "L" + str(channel) + "D" + str(value) + "\n"  # Might have to change this to \r to get the correct carriage return
-        self.serial_port.write(cmd.encode())
-        self.power_setpoint = value
-
-    # LASER'S CURRENT STATUS
-    # The get... methods return a string giving information about the laser
-    def getPower(self):
-        """Returns internal measured Laser power"""
-        self.serial_port.flushInput()
-        self.serial_port.write(b"lpa?\n")
-        value = self.serial_port.readline().decode()
-        return value
-
-    def getMode(self):
-        """Returns mode of operation: constant current or current power"""
-        self.serial_port.flushInput()
-        self.serial_port.write(b"lip?\n")
-        value = self.serial_port.readline().decode()
-        if(value == "lip=0\n"):
-            value = "Constant power mode"
-        else:
-            value = "Constant current mode"
-        return value
-
-    def getPowerCommand(self):
-        """gets the nominal power command in W"""
-        self.serial_port.flushInput()
-        self.serial_port.write(b"lp?\n")
-        value = self.serial_port.readline().decode()
-        return "power command: "+value+"W"
-
-    def getTemperature(self):
-        """Gets Temperature of SHG cristal"""
-        self.serial_port.flushInput()
-        self.serial_port.write(b"lx_temp_shg?\n")
-        value = self.serial_port.readline().decode()
-        return value
-
-    def getCurrent(self):
-        """Returns actual current"""
-        self.serial_port.flushInput()
-        self.serial_port.write(b"li?\n")
-        value = self.serial_port.readline().decode()
-        return value
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args, **kwargs):
-        self.close()
-
-    def close(self):
-        self.enabled = False
-        self.serial_port.close()
-        
 
 class ScanZ(object):
     def __new__(cls, *args):
-
         try:
             from control.zpiezo import PCZPiezo
             scan = PCZPiezo(*args)

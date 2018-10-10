@@ -117,7 +117,7 @@ class MockSLM(object):
 
 class MockLeicaZDrive(object):
 
-    def __init__(self,SerialDriver=0):
+    def __init__(self, SerialDriver=0):
         super().__init__()
         print('Simulated Leica Z-drive')
 
@@ -144,7 +144,7 @@ class MockLeicaZDrive(object):
 
 class MockPCZPiezo(object):
 
-    def __init__(self,SerialDriver=0):
+    def __init__(self, SerialDriver=0):
         super().__init__()
         print('Simulated PiezoConcept Z-piezo')
 
@@ -167,6 +167,55 @@ class MockPCZPiezo(object):
     def relZ(self, value):
         """ Relative Z position movement. """
         pass
+
+
+class MockAAAOTF(object):
+
+    def __init__(self, SerialDriver=0):
+        super().__init__()
+        print('Simulated AA AOTF')
+
+    # POWER ADJUSTMENT
+
+    @Feat()
+    def power(self, channel):
+        """ Power in dBm. """
+        pass
+
+    @power.setter
+    def power(self, channel, value):
+        """ Power adjustment for channel X, from 0 to 1023. """
+        pass
+
+    # FREQUENCY ADJUSTMENT
+
+    @Feat
+    def frequency(self, channel):
+        """ Frequnecy in MHz. """
+        pass
+
+    @frequency.setter
+    def frequency(self, channel, value):
+        """ Frequency adjustment for channel X, from 0 to 1023. """
+        pass
+
+    # CONTROL/STATUS
+
+    @Action()
+    def channelMode(self, channel, setting):
+        """ Set channel to internal (0) or external (1) operation mode. """
+        pass
+
+    @Action()
+    def driverMode(self, setting):
+        """ Set global to internal (0) or external (1) operation mode. """
+        pass
+
+    @Action()
+    def channelOn(self, channel, setting):
+        """ Turn channel on (1) or off (0). """
+        pass
+
 
 class MockWebcam(object):
 
