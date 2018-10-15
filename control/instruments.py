@@ -322,7 +322,7 @@ class CameraTIS(mockers.MockHamamatsu):
         # now = time.time()
         #frame = np.average(frame, 2)  # Old way, averaging the RGB image to a grayscale. Very slow for the big camera (2480x2048).
         #print(frame)
-        frame = np.array(frame[:, :, 0],dtype='float64')  # New way, just take the R-component, this should anyway contain most information in both cameras.
+        frame = np.array(frame[:, :, 0], dtype='float64')  # New way, just take the R-component, this should anyway contain most information in both cameras.
         # print(frame)
         # now = time.time()
         # print("Avg RGB took: ", now-then, " seconds")
