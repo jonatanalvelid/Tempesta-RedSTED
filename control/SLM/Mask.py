@@ -142,7 +142,7 @@ class Mask(object):
         self.two_PiToUInt8()
         return
 
-    def setHalf(self, R, x=0, y=0, rotation=True, rotang=0):
+    def setHalf(self, R, x=0, y=0, rotang=0):
         """Transforms the current mask in a half-pattern mask for testing
         aberrations."""
         self.img = pm.HalfPattern(self.m, self.n, R, x, y, rotang)
@@ -150,7 +150,7 @@ class Mask(object):
         self.two_PiToUInt8()
         return
 
-    def setQuad(self, R, x=0, y=0, rotation=True, rotang=0):
+    def setQuad(self, R, x=0, y=0, rotang=0):
         """Transforms the current mask in a quadrant-pattern mask for testing
         aberrations."""
         self.img = pm.QuadrantPattern(self.m, self.n, R, x, y, rotang)
@@ -158,7 +158,7 @@ class Mask(object):
         self.two_PiToUInt8()
         return
 
-    def setHex(self, R, x=0, y=0, rotation=True, rotang=0):
+    def setHex(self, R, x=0, y=0, rotang=0):
         """Transforms the current mask in a hexant-pattern mask for testing
         aberrations."""
         self.img = pm.HexPattern(self.m, self.n, R, x, y, rotang)
@@ -166,7 +166,7 @@ class Mask(object):
         self.two_PiToUInt8()
         return
 
-    def setSplit(self, R, x=0, y=0, rotation=True, rotang=0):
+    def setSplit(self, R, x=0, y=0, rotang=0):
         """Transforms the current mask in a split bullseye pattern mask for
         testing aberrations."""
         self.img = pm.SplitBullseyePattern(self.m, self.n, R, x, y, rotang)
@@ -476,7 +476,7 @@ class Helix_Hat(DoubleMask):
 class Gaussians(DoubleMask):
     """class creating a mask containing a helix on the left part of the chip and a top hat
     on the right part. R corresponds to the radius of each of the masks in pixels"""
-    def __init__(self, m, n, lbd, R, sigma, left_pos=(0, 0), right_pos=(0, 0), rotation=True):
+    def __init__(self, m, n, lbd, R, sigma, left_pos=(0, 0), right_pos=(0, 0)):
         """print("Gaussians init called")"""
         DoubleMask.__init__(self, m, n, lbd, left_center=left_pos, right_center=right_pos)
         self.R = R
@@ -513,60 +513,58 @@ class Aberrations(DoubleMask):
 class Half(DoubleMask):
     """class creating a mask containing a helix on the left part of the chip and a top hat
     on the right part. R corresponds to the radius of each of the masks in pixels"""
-    def __init__(self, m, n, lbd, R, sigma, left_pos=(0, 0), right_pos=(0, 0), rotation=True, rotang=0):
+    def __init__(self, m, n, lbd, R, sigma, left_pos=(0, 0), right_pos=(0, 0), rotang=0):
         DoubleMask.__init__(self, m, n, lbd, left_center=left_pos, right_center=right_pos)
         self.R = R
 
         if self.R > min(m // 2, n // 2):
             print("R out of range")
             self.R = min(m // 2, n // 2)
-        self.left.setHalf(R, left_pos[0], left_pos[1], rotation, rotang)
-        self.right.setHalf(R, right_pos[0], right_pos[1], rotation, rotang)
+        self.left.setHalf(R, left_pos[0], left_pos[1], rotang)
+        self.right.setHalf(R, right_pos[0], right_pos[1], rotang)
         self.update()
 
 
 class Quad(DoubleMask):
     """class creating a mask containing a helix on the left part of the chip and a top hat
     on the right part. R corresponds to the radius of each of the masks in pixels"""
-    def __init__(self, m, n, lbd, R, sigma, left_pos=(0, 0), right_pos=(0, 0), rotation=True, rotang=0):
-        print('hey')
+    def __init__(self, m, n, lbd, R, sigma, left_pos=(0, 0), right_pos=(0, 0), rotang=0):
         DoubleMask.__init__(self, m, n, lbd, left_center=left_pos, right_center=right_pos)
-        print('what')
         self.R = R
 
         if self.R > min(m // 2, n // 2):
             print("R out of range")
             self.R = min(m // 2, n // 2)
-        self.left.setQuad(R, left_pos[0], left_pos[1], rotation, rotang)
-        self.right.setQuad(R, right_pos[0], right_pos[1], rotation, rotang)
+        self.left.setQuad(R, left_pos[0], left_pos[1], rotang)
+        self.right.setQuad(R, right_pos[0], right_pos[1], rotang)
         self.update()
 
 
 class Hex(DoubleMask):
     """class creating a mask containing a helix on the left part of the chip and a top hat
     on the right part. R corresponds to the radius of each of the masks in pixels"""
-    def __init__(self, m, n, lbd, R, sigma, left_pos=(0, 0), right_pos=(0, 0), rotation=True, rotang=0):
+    def __init__(self, m, n, lbd, R, sigma, left_pos=(0, 0), right_pos=(0, 0), rotang=0):
         DoubleMask.__init__(self, m, n, lbd, left_center=left_pos, right_center=right_pos)
         self.R = R
 
         if self.R > min(m // 2, n // 2):
             print("R out of range")
             self.R = min(m // 2, n // 2)
-        self.left.setHex(R, left_pos[0], left_pos[1], rotation, rotang)
-        self.right.setHex(R, right_pos[0], right_pos[1], rotation, rotang)
+        self.left.setHex(R, left_pos[0], left_pos[1], rotang)
+        self.right.setHex(R, right_pos[0], right_pos[1], rotang)
         self.update()
 
 
 class Split(DoubleMask):
     """class creating a mask containing a helix on the left part of the chip and a top hat
     on the right part. R corresponds to the radius of each of the masks in pixels"""
-    def __init__(self, m, n, lbd, R, sigma, left_pos=(0, 0), right_pos=(0, 0), rotation=True, rotang=0):
+    def __init__(self, m, n, lbd, R, sigma, left_pos=(0, 0), right_pos=(0, 0), rotang=0):
         DoubleMask.__init__(self, m, n, lbd, left_center=left_pos, right_center=right_pos)
         self.R = R
 
         if self.R > min(m // 2, n // 2):
             print("R out of range")
             self.R = min(m // 2, n // 2)
-        self.left.setSplit(R, left_pos[0], left_pos[1], rotation, rotang)
-        self.right.setSplit(R, right_pos[0], right_pos[1], rotation, rotang)
+        self.left.setSplit(R, left_pos[0], left_pos[1], rotang)
+        self.right.setSplit(R, right_pos[0], right_pos[1], rotang)
         self.update()

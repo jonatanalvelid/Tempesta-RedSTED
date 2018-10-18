@@ -177,35 +177,37 @@ class slmWidget(QtGui.QFrame):
         self.mask=Mask.Gaussians(m,n,self.lbdPar.value(),self.RPar.value(),self.sigmaPar.value());
         self.mask.tilt(self.anglePar.value()
         """
-        self.loadParamGaussian()
+        # self.loadParamGaussian()
+        self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center)
+        self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
-        self.maskAber.update()
+        # self.maskAber.update()
         self.update()
 
     def setHalf(self):
         """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
-        self.maskMask = Mask.Half(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center)
+        self.maskMask = Mask.Half(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
     def setQuadrant(self):
         """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
-        self.maskMask = Mask.Quad(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center)
+        self.maskMask = Mask.Quad(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
     def setHex(self):
         """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
-        self.maskMask = Mask.Hex(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center)
+        self.maskMask = Mask.Hex(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
     def setSplit(self):
         """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
-        self.maskMask = Mask.Split(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center)
+        self.maskMask = Mask.Split(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
@@ -327,9 +329,9 @@ class slmWidget(QtGui.QFrame):
         self.right_center = mask_state["right_center"]
 """
         self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), left_pos=self.left_center, right_pos=self.right_center)
-        self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.DaberrationFactors, self.THaberrationFactors, self.left_center, self.right_center, self.helix_rotPar.value())
+        # self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.DaberrationFactors, self.THaberrationFactors, self.left_center, self.right_center, self.helix_rotPar.value())
         self.maskMask.tilt(self.anglePar.value())
-        self.update()
+        # self.update()
 
 
 class SLMParamTree(ParameterTree):
@@ -456,6 +458,12 @@ class ArrowsControl(QtGui.QFrame):
         self.hexButton = QtGui.QPushButton("Hex pattern")
         self.splitbullButton = QtGui.QPushButton("Split bullseye pattern")
 
+        self.rotAngLabel = QtGui.QLabel('Pattern rotation angle [rad]')
+        self.rotAngEdit = QtGui.QLineEdit('0')
+        
+        self.leftPatternBox = QtGui.QCheckBox('Modify left')
+        self.rightPatternBox = QtGui.QCheckBox('Modify right')
+
         self.arrow_layout.addWidget(self.upButton, 1, 1)
         self.arrow_layout.addWidget(self.downButton, 3, 1)
         self.arrow_layout.addWidget(self.leftButton, 2, 0)
@@ -471,6 +479,12 @@ class ArrowsControl(QtGui.QFrame):
         self.arrow_layout.addWidget(self.quadrantButton, 7, 0)
         self.arrow_layout.addWidget(self.hexButton, 6, 2)
         self.arrow_layout.addWidget(self.splitbullButton, 7, 2)
+
+        self.arrow_layout.addWidget(self.rotAngLabel, 8, 1)
+        self.arrow_layout.addWidget(self.rotAngEdit, 9, 1)
+        
+        self.arrow_layout.addWidget(self.leftPatternBox, 10, 0)
+        self.arrow_layout.addWidget(self.rightPatternBox, 10, 2)
 
         # Definition of the global layout:
         self.layout = QtGui.QVBoxLayout()
