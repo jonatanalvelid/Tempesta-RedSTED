@@ -53,7 +53,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
 
         super().__init__(*args, **kwargs)
 
-        os.chdir('C:\\Users\\STEDred\Documents\TempestaSnapshots')
+        # os.chdir('C:\\Users\\STEDred\Documents\TempestaSnapshots')
 
         self.violetlaser = violetlaser
         self.slm = slm
