@@ -52,6 +52,9 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
                  webcamFocusLock, webcamWidefield, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
+
+        os.chdir('C:\\Users\\RedSTED\Documents\TempestaSnapshots')
+
         self.violetlaser = violetlaser
         self.slm = slm
         self.scanZ = scanZ
