@@ -38,12 +38,6 @@ class WidefieldWidget(QtGui.QFrame):
         self.frameTime = 1000 / self.scansPerS
         self.camOnVar = False
 
-        self.camDialogButton = QtGui.QPushButton('Camera Dialog')
-        self.camDialogButton.clicked.connect(self.webcam.show_dialog)
-        self.snapshotButton = QtGui.QPushButton('Take snapshot')
-        self.snapshotButton.clicked.connect(self.webcamGraph.takeSnapshot())
-        self.camOnBox = QtGui.QCheckBox('Camera on')
-
         # Widefield webcam graph widget
         self.webcamGraph = WebcamGraph()
 
@@ -53,6 +47,12 @@ class WidefieldWidget(QtGui.QFrame):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.processDataThread.update)
         self.timer.start(self.frameTime)
+
+        self.camDialogButton = QtGui.QPushButton('Camera Dialog')
+        self.camDialogButton.clicked.connect(self.webcam.show_dialog)
+        self.snapshotButton = QtGui.QPushButton('Take snapshot')
+        self.snapshotButton.clicked.connect(self.processDataThread.takeSnapshot)
+        self.camOnBox = QtGui.QCheckBox('Camera on')
 
         # GUI layout
         self.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Raised)
@@ -93,7 +93,7 @@ class ProcessDataThread(QtCore.QThread):
                    'exposure_time': 10}
         # Grab camera image
         self.webcamImage = self.webcam.grab_image()
-        self.sensorSize = np.array(self.image.shape)
+        self.sensorSize = np.array(self.webcamImage.shape)
 
     def update(self):
         if self.widefieldWidget.camOnVar:
