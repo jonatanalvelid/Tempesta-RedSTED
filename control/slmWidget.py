@@ -51,11 +51,11 @@ class slmWidget(QtGui.QFrame):
         self.THaberrationFactors = np.array([self.fTHDefocPar.value(), self.fTHSphPar.value(), self.fTHVertComaPar.value(), self.fTHHozComaPar.value(), self.fTHVertAstPar.value(), self.fTHOblAstPar.value()])
 
         self.slm = slm
-        self.maskDTH = Mask.Helix_Hat(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value())
-        self.maskDTH.tilt(self.anglePar.value())
+        self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value())
         self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.DaberrationFactors, self.THaberrationFactors)
 
-        self.mask = self.maskDTH + self.maskAber
+        self.maskMask.tilt(self.anglePar.value())
+        self.mask = self.maskMask + self.maskAber
         self.left_center = (0, 0)
         self.right_center = (0, 0)
 
@@ -99,6 +99,10 @@ class slmWidget(QtGui.QFrame):
         self.arrowsModule.loadButton.clicked.connect(self.loadParam)
         self.arrowsModule.blackButton.clicked.connect(self.setBlack)
         self.arrowsModule.gaussiansButton.clicked.connect(self.setGaussians)
+        self.arrowsModule.halfButton.clicked.connect(self.setHalf)
+        self.arrowsModule.quadrantButton.clicked.connect(self.setQuadrant)
+        self.arrowsModule.hexButton.clicked.connect(self.setHex)
+        self.arrowsModule.splitbullButton.clicked.connect(self.setSplit)
 
         # GUI layout
         grid = QtGui.QGridLayout()
@@ -117,29 +121,17 @@ class slmWidget(QtGui.QFrame):
         """Moves the current Mask up"""
         self.moveMask(-1 * self.arrowsModule.increment.value(), 0)
 
-        self.left_center = self.maskDTH.left_center
-        self.right_center = self.maskDTH.right_center
-
     def downClicked(self):
         """Moves the current Mask down"""
         self.moveMask(self.arrowsModule.increment.value(), 0)
-
-        self.left_center = self.maskDTH.left_center
-        self.right_center = self.maskDTH.right_center
 
     def leftClicked(self):
         """Moves the current Mask left"""
         self.moveMask(0, -1 * self.arrowsModule.increment.value())
 
-        self.left_center = self.maskDTH.left_center
-        self.right_center = self.maskDTH.right_center
-
     def rightClicked(self):
         """Moves the current Mask right"""
         self.moveMask(0, self.arrowsModule.increment.value())
-
-        self.left_center = self.maskDTH.left_center
-        self.right_center = self.maskDTH.right_center
 
     def moveMask(self, x, y):
         """Sends instruction to both the SLM and the display to move the corresponding mask
@@ -148,41 +140,75 @@ class slmWidget(QtGui.QFrame):
         :param int y: new y position of the center of the Mask"""
 
         if(str(self.arrowsModule.maskMenu.currentText()) == "Donut"):
-            self.maskDTH.moveLeft(x, y)
+            self.maskMask.moveLeft(x, y)
             self.maskAber.moveLeft(x, y)
         elif(str(self.arrowsModule.maskMenu.currentText()) == "Top hat"):
-            self.maskDTH.moveRight(x, y)
+            self.maskMask.moveRight(x, y)
             self.maskAber.moveRight(x, y)
         else:
             print("Error: Name of mask does not exist.")
-        self.maskDTH.update()
+        self.maskMask.update()
         self.maskAber.update()
         self.update()
 
+        
+        ### I AM HERE ###
+        
+        
     def setBlack(self):
         """Sets the current mask to a black (null phase) Mask. Useful to check the masks one by one"""
         if(str(self.arrowsModule.maskMenu.currentText()) == "Donut"):
-            self.maskDTH.left.setBlack()
+            self.maskMask.left.setBlack()
             self.maskAber.left.setBlack()
             self.black_left = True
         elif(str(self.arrowsModule.maskMenu.currentText()) == "Top hat"):
-            self.maskDTH.right.setBlack()
+            self.maskMask.right.setBlack()
             self.maskAber.right.setBlack()
             self.black_right = True
         else:
             print("Error: Name of mask does not exist.")
-        self.maskDTH.update()
+        self.maskMask.update()
         self.maskAber.update()
         self.update()
 
     def setGaussians(self):
         """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
-        """print("setGaussians called")
+        """
         self.mask=Mask.Gaussians(m,n,self.lbdPar.value(),self.RPar.value(),self.sigmaPar.value());
-        self.mask.tilt(self.anglePar.value())"""
+        self.mask.tilt(self.anglePar.value()
+        """
         self.loadParamGaussian()
+        self.maskMask.update()
+        self.maskAber.update()
         self.update()
-        """print("setGaussians finished")"""
+
+    def setHalf(self):
+        """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
+        self.maskMask = Mask.Half(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center)
+        self.maskMask.tilt(self.anglePar.value())
+        self.maskMask.update()
+        self.update()
+
+    def setQuadrant(self):
+        """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
+        self.maskMask = Mask.Quad(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center)
+        self.maskMask.tilt(self.anglePar.value())
+        self.maskMask.update()
+        self.update()
+
+    def setHex(self):
+        """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
+        self.maskMask = Mask.Hex(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center)
+        self.maskMask.tilt(self.anglePar.value())
+        self.maskMask.update()
+        self.update()
+
+    def setSplit(self):
+        """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
+        self.maskMask = Mask.Split(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center)
+        self.maskMask.tilt(self.anglePar.value())
+        self.maskMask.update()
+        self.update()
 
     def apply(self):
         """Applies a configuration to the SLM and changes the mask displayed"""
@@ -205,10 +231,10 @@ class slmWidget(QtGui.QFrame):
         self.THaberrationFactors = np.array([self.fTHDefocPar.value(), self.fTHSphPar.value(), self.fTHVertComaPar.value(), self.fTHHozComaPar.value(), self.fTHVertAstPar.value(), self.fTHOblAstPar.value()])
 
         if self.gaussiansBool:
-            self.maskDTH = Mask.Gaussians(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), left_pos=self.left_center, right_pos=self.right_center)
+            self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), left_pos=self.left_center, right_pos=self.right_center)
         else:
-            self.maskDTH = Mask.Helix_Hat(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, self.helix_rotPar.value())
-        self.maskDTH.tilt(self.anglePar.value())
+            self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, self.helix_rotPar.value())
+        self.maskMask.tilt(self.anglePar.value())
         self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.DaberrationFactors, self.THaberrationFactors, self.left_center, self.right_center, self.helix_rotPar.value())
 
         self.update()
@@ -216,7 +242,9 @@ class slmWidget(QtGui.QFrame):
     def update(self):
         """When any parameter changes, sends the new image to the SLM and the display"""
         # Changing the orientation of image so they have the same orientation on the slm and on the screen
-        self.mask = self.maskDTH + self.maskAber
+        self.left_center = self.maskMask.left_center
+        self.right_center = self.maskMask.right_center
+        self.mask = self.maskMask + self.maskAber
         image = self.mask.img.transpose()
         image = np.fliplr(image)
         self.img.setImage(image, autoLevels=False, autoDownsample=False)
@@ -229,7 +257,7 @@ class slmWidget(QtGui.QFrame):
         """Saves the current SLM configuration, in particular the position of the Masks.
         The informations are stored in a file 'informations.bbn' (arbitrary extension) with the module pickle. """
         state = self.tree.p.saveState()
-        mask_state = {"left_center": self.maskDTH.left_center, "right_center": self.maskDTH.right_center}
+        mask_state = {"left_center": self.maskMask.left_center, "right_center": self.maskMask.right_center}
         with open("informations.bbn", "wb") as f:
             pickler = pickle.Pickler(f)
             pickler.dump(state)
@@ -279,15 +307,15 @@ class slmWidget(QtGui.QFrame):
         self.left_center = mask_state["left_center"]
         self.right_center = mask_state["right_center"]
 
-        self.maskDTH = Mask.Helix_Hat(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), left_pos=self.left_center, right_pos=self.right_center)
-        self.maskDTH.tilt(self.anglePar.value())
+        self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), left_pos=self.left_center, right_pos=self.right_center)
+        self.maskMask.tilt(self.anglePar.value())
         self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.DaberrationFactors, self.THaberrationFactors, left_pos=self.left_center, right_pos=self.right_center)
         self.update()
 
     def loadParamGaussian(self):
         """loads the parameters from a previous configuration"""
         self.gaussiansBool = True
-
+"""
         with open('informations.bbn', 'rb') as f:
             depickler = pickle.Unpickler(f)
             state = depickler.load()
@@ -297,10 +325,10 @@ class slmWidget(QtGui.QFrame):
         print("Load: centers", mask_state)
         self.left_center = mask_state["left_center"]
         self.right_center = mask_state["right_center"]
-
-        self.maskDTH = Mask.Gaussians(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), left_pos=self.left_center, right_pos=self.right_center)
+"""
+        self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), left_pos=self.left_center, right_pos=self.right_center)
         self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.DaberrationFactors, self.THaberrationFactors, self.left_center, self.right_center, self.helix_rotPar.value())
-        self.maskDTH.tilt(self.anglePar.value())
+        self.maskMask.tilt(self.anglePar.value())
         self.update()
 
 
@@ -400,7 +428,8 @@ class ArrowsControl(QtGui.QFrame):
 
         self.rightButton = QtGui.QPushButton('Right')
         self.rightButton.setCheckable(False)
-        self.rightButton.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+        self.rightButton.setSizePolicy(QtGui.QSizePolicy.Preferred,
+                                      QtGui.QSizePolicy.Expanding)
         self.rightButton.setFixedSize(self.upButton.sizeHint())
 
         # Widget to change manually the amount of deplacement induced by the arrows
@@ -412,7 +441,7 @@ class ArrowsControl(QtGui.QFrame):
         label.setText("Move (px)")
         self.increment = QtGui.QSpinBox()
         self.increment.setRange(1, 500)
-        self.increment.setValue(10)
+        self.increment.setValue(1)
         self.incrementLayout.addWidget(label)
         self.incrementLayout.addWidget(self.increment)
 
@@ -421,6 +450,11 @@ class ArrowsControl(QtGui.QFrame):
 
         self.blackButton = QtGui.QPushButton("Black frame")
         self.gaussiansButton = QtGui.QPushButton("Gaussians")
+
+        self.halfButton = QtGui.QPushButton("Half pattern")
+        self.quadrantButton = QtGui.QPushButton("Quadrant pattern")
+        self.hexButton = QtGui.QPushButton("Hex pattern")
+        self.splitbullButton = QtGui.QPushButton("Split bullseye pattern")
 
         self.arrow_layout.addWidget(self.upButton, 1, 1)
         self.arrow_layout.addWidget(self.downButton, 3, 1)
@@ -432,7 +466,12 @@ class ArrowsControl(QtGui.QFrame):
         self.arrow_layout.addWidget(self.loadButton, 5, 0)
         self.arrow_layout.addWidget(self.blackButton, 4, 2)
         self.arrow_layout.addWidget(self.gaussiansButton, 5, 2)
-        
+
+        self.arrow_layout.addWidget(self.halfButton, 6, 0)
+        self.arrow_layout.addWidget(self.quadrantButton, 7, 0)
+        self.arrow_layout.addWidget(self.hexButton, 6, 2)
+        self.arrow_layout.addWidget(self.splitbullButton, 7, 2)
+
         # Definition of the global layout:
         self.layout = QtGui.QVBoxLayout()
         self.setLayout(self.layout)
