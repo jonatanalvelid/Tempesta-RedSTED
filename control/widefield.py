@@ -5,6 +5,7 @@ Created on Fri Sep 28 17:51:28 2018
 @author: jonatan.alvelid
 """
 
+import os
 import numpy as np
 # import time
 # import threading
@@ -94,6 +95,7 @@ class ProcessDataThread(QtCore.QThread):
         # Grab camera image
         self.webcamImage = self.webcam.grab_image()
         self.sensorSize = np.array(self.webcamImage.shape)
+        self.snapshotwd = 'C:\\Users\\STEDred\Documents\TempestaSnapshots'
 
     def update(self):
         if self.widefieldWidget.camOnVar:
@@ -114,11 +116,14 @@ class ProcessDataThread(QtCore.QThread):
         if self.widefieldWidget.camOnVar:
             imagearray = np.array(self.webcamImage)
             datetimestring = time.strftime("%Y%m%d-%H%M%S")
-            filename = datetimestring + '.txi'  # .txi for text image
+            # filename = datetimestring + '.txi'  # .txi for text image
             filenametiff = datetimestring + '.tiff'
-            np.savetxt(filename, imagearray)
+            # np.savetxt(filename, imagearray)
+            currwd = os.getcwd()
+            os.chdir(self.snapshotwd)
             scipym.toimage(imagearray, cmin=0.0, cmax=..., mode='F').save(filenametiff)
             # scipym.imsave(filenametiff, imagearray)
+            os.chdir(currwd)
 
 
 class WebcamGraph(pg.GraphicsWindow):
