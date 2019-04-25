@@ -17,7 +17,7 @@ from lantz.drivers.legacy.serial import SerialDriver
 
 
 class MHXYStage(SerialDriver):
-    """Driver for the PiezoConcept Z-piezo.
+    """Driver for the Marzhauser XY-stage.
     """
 
     # flow control flags
@@ -27,7 +27,7 @@ class MHXYStage(SerialDriver):
 
     ENCODING = 'ascii'
 
-    RECV_TERMINATION = '\n'
+    RECV_TERMINATION = ''
     SEND_TERMINATION = '\n'
 
     BAUDRATE = 57600
@@ -45,19 +45,25 @@ class MHXYStage(SerialDriver):
 
     @Feat(read_once=True)
     def idn(self):
-        """Get information of system, such as name, number of axis,...
-        maximum stroke etc. """
-        return self.query('?readsn')
+        """Read serial number of stage. """
+        print(str(self.query('?readsn')))
+        return str(self.query('?readsn'))
 
     def initialize(self):
         super().initialize()
-        self.query('!dim 1 1')
+        self.query('!dim 1 1')  # Set the dimensions of all commands to um
         time.sleep(0.1)
-        self.query('!resolution 6')
+        self.query('!resolution 6')  # Set the read position resolution to nm
         time.sleep(0.1)
-        self.query('!clim 65000 42500 8000')
+        self.query('!clim 0 0 15000')  # Set circular limits to the movement
+        # range, centered at 0,0 with a radius of 10000 µm (10 mm).
         time.sleep(0.1)
-        self.query('save')
+        print(self.query('save'))  # Save settings to the controller
+        time.sleep(0.1)
+        #print(self.query('moc'))  # Move the stage to the center position, in case it
+        # has moved from there after being switched off. Eventually change this
+        # to the actual center of most cover slips! 
+        #time.sleep(0.1)
 
     # XY-POSITION READING AND MOVEMENT
 
@@ -81,26 +87,31 @@ class MHXYStage(SerialDriver):
         """ Relative Y position movement, in um. """
         self.query('mor y ' + str(float(value)))
 
+#    @Action(units='micrometer')
+#    def move_rel(self, valuex, valuey):
+#        """ Relative position movement, in um. """
+#        self.query('mor ' + str(float(valuex)) + ' ' + str(float(valuey)))
+
     @Action(units='micrometer', limits=(100,))
     def move_absX(self, value):
-        """ Absolute Z position movement, in um. """
+        """ Absolute X position movement, in um. """
         self.query('moa x ' + str(float(value)))
 
     @Action(units='micrometer', limits=(100,))
     def move_absY(self, value):
-        """ Absolute Z position movement, in um. """
+        """ Absolute Y position movement, in um. """
         self.query('moa y ' + str(float(value)))
 
     # CONTROL/STATUS/LIMITS
 
     @Feat(units='micrometer')
     def circLimit(self):
-        """ Absolute Z position. """
+        """ Circular limits, in terms of X,Y center and radius. """
         return self.query('?clim')
 
     @circLimit.setter
     def circLimit(self, xpos, ypos, radius):
-        """ Absolute Z position movement, in um. """
+        """ Set circular limits, in terms of X,Y center and radius. """
         self.query('!clim ' + str(float(xpos)) + ' ' +
                    str(float(ypos)) + ' ' + str(float(radius)))
 

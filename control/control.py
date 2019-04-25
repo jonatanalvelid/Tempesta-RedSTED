@@ -17,6 +17,7 @@ import control.LaserWidget as LaserWidget
 # import control.Scan as Scan
 import control.focus as focus
 import control.widefield as widefield
+import control.tiling as tiling
 # import control.molecules_counter as moleculesCounter
 # import control.ontime as ontime
 # import control.tableWidget as tableWidget
@@ -43,12 +44,14 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
     :param Laser uvlaser: object controlling one laser
     :param Camera orcaflash: object controlling a CCD camera
     :param SLMdisplay slm: object controlling a SLM
+    :param Scanner scanXY: object controlling a Marzhauser XY-scanning stage
+    :param Scanner scanZ: object controlling a Piezoconcept Z-scanning inset
     """
 
     liveviewStarts = QtCore.pyqtSignal()
     liveviewEnds = QtCore.pyqtSignal()
 
-    def __init__(self, bluelaser, violetlaser, uvlaser, slm, scanZ,
+    def __init__(self, bluelaser, violetlaser, uvlaser, slm, scanZ, scanXY,
                  webcamFocusLock, webcamWidefield, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
@@ -58,6 +61,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         self.violetlaser = violetlaser
         self.slm = slm
         self.scanZ = scanZ
+        self.scanXY = scanXY
         self.filewarning = FileWarning()
 
         self.s = Q_(1, 's')
@@ -135,6 +139,12 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         widefieldDock.addWidget(self.widefieldWidget)
         dockArea.addDock(widefieldDock, "below", focusDock)
 
+        # XY-scanner tiling widget
+        tilingDock = Dock("Tiling", size=(600, 500))
+        self.tilingWidget = tiling.TilingWidget(self.scanXY)
+        tilingDock.addWidget(self.tilingWidget)
+        dockArea.addDock(tilingDock, "below", widefieldDock)
+        
         self.setWindowTitle('Tempesta - SLM and Katana laser control')
         self.cwidget = QtGui.QWidget()
         self.setCentralWidget(self.cwidget)
