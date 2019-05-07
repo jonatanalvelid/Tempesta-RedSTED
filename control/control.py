@@ -141,7 +141,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
 
         # XY-scanner tiling widget
         tilingDock = Dock("Tiling", size=(600, 500))
-        self.tilingWidget = tiling.TilingWidget(self.scanXY)
+        self.tilingWidget = tiling.TilingWidget(self.scanXY, self.focusWidget)
         tilingDock.addWidget(self.tilingWidget)
         dockArea.addDock(tilingDock, "below", widefieldDock)
         

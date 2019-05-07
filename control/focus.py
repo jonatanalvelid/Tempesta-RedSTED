@@ -167,8 +167,13 @@ class FocusWidget(QtGui.QFrame):
         self.aboutToLock = False
         if self.lockButton.isChecked():
             self.lockFocusFirst()
+            self.lockButton.setText('Unlock')
         else:
             self.unlockFocus()
+            self.lockButton.setText('Lock')
+            
+    def mockFocusPress(self):
+        print('Focus is locked! (sure, you thought so, no?)')
 
     def zStackVarChange(self):
         if self.zStackVar:
@@ -259,6 +264,15 @@ class FocusWidget(QtGui.QFrame):
         if self.averageDiff < 0.4:
             self.lockFocus()
             self.aboutToLock = False
+
+    def tilingStep(self):
+        # Call this function whenever there is a tiling step taken.
+        # If the focus is locked, unlock it and lock it again, like for a zstep
+        if self.locked:
+            self.unlockFocus()
+            self.dataPoints = np.zeros(5)
+            self.averageDiff = 10
+            self.aboutToLock = True
 
     def exportData(self):
         self.sizeofData = np.size(self.graph.savedDataSignal)

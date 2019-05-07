@@ -20,11 +20,12 @@ from pyqtgraph.Qt import QtGui
 
 class TilingWidget(QtGui.QFrame):
 
-    def __init__(self, xystage, main=None, *args, **kwargs):
+    def __init__(self, xystage, focuswidget, main=None, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.setMinimumSize(2, 350)
 
+        self.focusWidget = focuswidget
         self.main = main  # main va a ser RecordingWidget de control.py
         self.xystage = xystage
         self.tilingActiveVar = False  # boolean telling if tiling is active
@@ -37,8 +38,8 @@ class TilingWidget(QtGui.QFrame):
         self.movelengthYEdit = QtGui.QLineEdit('0')
         self.moveButton = QtGui.QPushButton('Move')
         self.moveButton.clicked.connect(self.movestage)
-        self.moveCenterButton = QtGui.QPushButton('Move to (0,0)')
-        self.moveCenterButton.clicked.connect(self.movecenter)
+        # self.moveCenterButton = QtGui.QPushButton('Move to (0,0)')
+        # self.moveCenterButton.clicked.connect(self.movecenter)
         
         self.tilesXLabel = QtGui.QLabel('Number of tiles, X')
         self.tilesXEdit = QtGui.QLineEdit('1')
@@ -52,6 +53,9 @@ class TilingWidget(QtGui.QFrame):
         self.initTilingButton.clicked.connect(self.inittiling)
         self.nextTileButton = QtGui.QPushButton('Next tile')
         self.nextTileButton.clicked.connect(self.nexttile)
+        
+        self.mockFocusButton = QtGui.QPushButton('Mock focus')
+        self.mockFocusButton.clicked.connect(self.focusWidget.tilingStep)
 
         # GUI layout
         self.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Raised)
@@ -62,7 +66,7 @@ class TilingWidget(QtGui.QFrame):
         grid.addWidget(self.movelengthYLabel, 0, 1)
         grid.addWidget(self.movelengthYEdit, 1, 1)
         grid.addWidget(self.moveButton, 4, 0)
-        grid.addWidget(self.moveCenterButton, 4, 1)
+        # grid.addWidget(self.moveCenterButton, 4, 1)
         
         grid.addWidget(self.tilesXLabel, 0, 3)
         grid.addWidget(self.tilesXEdit, 1, 3)
@@ -74,6 +78,7 @@ class TilingWidget(QtGui.QFrame):
         grid.addWidget(self.tilesMarginEdit, 3, 4)
         grid.addWidget(self.initTilingButton, 4, 3)
         grid.addWidget(self.nextTileButton, 4, 4)
+        grid.addWidget(self.mockFocusButton, 5, 4)
 
 
     def movestage(self):
@@ -81,9 +86,9 @@ class TilingWidget(QtGui.QFrame):
         self.xystage.move_relX(float(self.movelengthXEdit.text()))
         self.xystage.move_relY(float(self.movelengthYEdit.text()))
 
-    def movecenter(self):
-        self.xystage.move_absX(float(0))
-        self.xystage.move_absY(float(0))
+    # def movecenter(self):
+    #     self.xystage.move_absX(float(0))
+    #     self.xystage.move_absY(float(0))
         
     def inittiling(self):
         if self.tilingActiveVar == False:
@@ -128,8 +133,11 @@ class TilingWidget(QtGui.QFrame):
                 self.initTilingButton.setText('Initialize tiling')
                 self.tilenumber = 0
             else:
-                # If not, change the current tile number to the next tile
+                # If not, change the current tile number to the next tile,
+                # and call the tilingStep function in the focus widget, to
+                # unlock the focus and lock it anew.
                 self.tilenumber = self.tilenumber + 1
+                self.focusWidget.tilingStep()
             
 
     def closeEvent(self, *args, **kwargs):

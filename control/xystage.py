@@ -55,7 +55,7 @@ class MHXYStage(SerialDriver):
         time.sleep(0.1)
         self.query('!resolution 6')  # Set the read position resolution to nm
         time.sleep(0.1)
-        self.query('!clim 0 0 15000')  # Set circular limits to the movement
+        self.query('!clim 0 0 25000')  # Set circular limits to the movement
         # range, centered at 0,0 with a radius of 10000 µm (10 mm).
         time.sleep(0.1)
         print(self.query('save'))  # Save settings to the controller
