@@ -39,8 +39,6 @@ class TilingWidget(QtGui.QFrame):
         self.tilingFocusCheckBox.stateChanged.connect(self.tilingFocusCheckVarChange)
         self.tilingSavedFociCheckBox = QtGui.QCheckBox('Use saved focal planes for tiling')
         self.tilingSavedFociCheckBox.stateChanged.connect(self.tilingSavedFociVarChange)
-        self.saveFocPlaneButton = QtGui.QPushButton('Save focal plane for current tile')
-        self.saveFocPlaneButton.clicked.connect(self.savefocalplane)
 
         self.tilesXLabel = QtGui.QLabel('Number of tiles, X')
         self.tilesXEdit = QtGui.QLineEdit('1')
@@ -135,7 +133,10 @@ class TilingWidget(QtGui.QFrame):
             self.tilesysteps[-1] = -(int(self.tilesYEdit.text()) - 1)
             print(self.tilesysteps)
             
-            print(self.tiles)
+            # print(self.tiles)
+            # Lock the focus at the first position in the saved foci, if using the saved foci
+            if self.tilingSavedFociVar:
+                self.focusWidget.tilingStep(self.tilefoci[self.tilenumber])
         else:
             self.tilingActiveVar = False
             self.initTilingButton.setText('Initialize tiling')
