@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
+# import numpy as np
 import os
 import time
 
@@ -23,6 +23,7 @@ import control.tiling as tiling
 # import control.tableWidget as tableWidget
 import control.slmWidget as slmWidget
 import control.guitools as guitools
+import specpy as sp
 
 # Widget to control image or sequence recording. Recording only possible when liveview active.
 # StartRecording called when "Rec" presset. Creates recording thread with RecWorker, recording is then
@@ -62,6 +63,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         self.slm = slm
         self.scanZ = scanZ
         self.scanXY = scanXY
+        self.imspector = sp.Imspector()
         self.filewarning = FileWarning()
 
         self.s = Q_(1, 's')
@@ -141,7 +143,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
 
         # XY-scanner tiling widget
         tilingDock = Dock("Tiling", size=(600, 500))
-        self.tilingWidget = tiling.TilingWidget(self.scanXY, self.focusWidget)
+        self.tilingWidget = tiling.TilingWidget(self.scanXY, self.focusWidget, self.imspector)
         tilingDock.addWidget(self.tilingWidget)
         dockArea.addDock(tilingDock, "below", widefieldDock)
         

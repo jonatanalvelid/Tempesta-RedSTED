@@ -25,7 +25,7 @@ class FocusWidget(QtGui.QFrame):
     def __init__(self, scanZ, webcam, main=None, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.setMinimumSize(2, 350)
+        self.setMinimumSize(2, 350)  # Set the minimum size of the widget
 
         self.main = main
         self.z = scanZ
