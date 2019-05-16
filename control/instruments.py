@@ -367,13 +367,9 @@ class XYStage(object):
     def __new__(cls, *args):
 
         try:
-            print('1')
             from control.xystage import MHXYStage
-            print('2')
             xyscan = MHXYStage(*args)
-            print('3')
             xyscan.initialize()
-            print('4')
             return xyscan
         except:
             return mockers.MockMHXYStage()
