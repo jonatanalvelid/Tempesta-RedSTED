@@ -153,12 +153,25 @@ class TilingWidget(QtGui.QFrame):
                 self.measurementparams = self.immeasurement.parameters('')
                 # Double check if the measurement in imspector is actually a stack with the thrid axis as the Sync 0 axis
                 # Also check if the number of frames in Sync 0 is matchin the number of tiles!
-                if self.measurementparams['Measurement']['ThdAxis'] == 'Sync 0' and self.measurementparams['Sync']['0Res'] == self.numberoftiles:
-                    self.imspector.connect_end(self,1)
-                    self.rowsperframe = self.measurementparams['NiDAQ6353'][':YRes']
-                    print(self.rowsperframe)
+                # Also check if the size of the tiles equals the size of the measurement in Imepsctor
+                if self.measurementparams['Sync']['0Res'] == self.numberoftiles and self.measurementparams['NiDAQ6353'][':YLen'] == float(self.tilesSizeEdit.text()) and round(self.measurementparams['NiDAQ6353'][':XLen']) == float(self.tilesSizeEdit.text()):
+                    if self.measurementparams['Measurement']['ThdAxis'] == 'Sync 0':
+                        print('One-color tiling in progress!')
+                        self.imspector.connect_end(self,1)
+                        self.rowsperframe = self.measurementparams['NiDAQ6353'][':YRes']
+                        print(self.rowsperframe)
+                    elif self.measurementparams['Measurement']['SecAxis'] == 'NiDAQ6353 DACs::4' and self.measurementparams['Measurement']['FthAxis'] == 'Sync 0':
+                        print('Two-color tiling in progress!')
+                        self.imspector.connect_end(self,1)
+                        # Use double the number of rows, as we are doing two-color imaging, and as such want to take the next tile when we have scanned 2*the whole frame
+                        self.rowsperframe = 2*self.measurementparams['NiDAQ6353'][':YRes']
+                        print(self.rowsperframe)
+                    else:
+                        print('Axises in Imspector are not properly set-up for a tiling. Double check you settings.')
+                        self.endtiling()
+                        return
                 else:
-                    print('Number of tiles and number of frames in Imspector measurement do not agree!')
+                    print('Number of tiles and number of frames in Imspector or size of tile and size of frame in Imspector measurement do not agree!')
                     self.endtiling()
                     return
             self.tilesxsteps = np.ones((int(self.tilesYEdit.text()), int(self.tilesXEdit.text())-1))
