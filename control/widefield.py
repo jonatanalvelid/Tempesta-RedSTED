@@ -8,9 +8,9 @@ Created on Fri Sep 28 17:51:28 2018
 import numpy as np
 # import time
 # import threading
-import scipy.ndimage as ndi
+# import scipy.ndimage as ndi
 import scipy.misc as scipym
-from skimage.transform import resize
+# from skimage.transform import resize
 # from skimage.feature import peak_local_max
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
@@ -87,7 +87,7 @@ class WidefieldWidget(QtGui.QFrame):
             self.contRecVar = False
         else:
             self.contRecVar = True
-            
+
     def changeSaveFPS(self):
         self.savefps = np.float(self.savefpsEdit.text())
 
@@ -109,6 +109,7 @@ class ProcessDataThread(QtCore.QThread):
         self.webcamImage = self.webcam.grab_image()
         self.sensorSize = np.array(self.image.shape)
         self.contRecCount = 0  # Counter that keeps track of which frames to save in continuous recordings
+        self.secframe = 0  # keeps track of which frame inside one second is being taken
 
     def update(self):
         if self.widefieldWidget.camOnVar:
@@ -131,8 +132,16 @@ class ProcessDataThread(QtCore.QThread):
         if self.widefieldWidget.camOnVar:
             imagearray = np.array(self.webcamImage)
             datetimestring = time.strftime("%Y%m%d-%H%M%S")
-            filename = datetimestring + '.txi'  # .txi for text image
-            filenametiff = datetimestring + '.tiff'
+            # if multiple images per second, do this:
+            if self.widefieldWidget.contRecVar and self.widefieldWidget.savefps > 1:
+                if self.secframe >= self.widefieldWidget.savefps:
+                    self.secframe = 0
+                self.secframe = self.secframe + 1
+                filename = datetimestring + '_' + str(self.secframe) + '.txi'  # .txi for text image
+                filenametiff = datetimestring + '_' + str(self.secframe) + '.tiff'
+            else:
+                filename = datetimestring + '.txi'  # .txi for text image
+                filenametiff = datetimestring + '.tiff'
             np.savetxt(filename, imagearray)
             scipym.toimage(imagearray, cmin=0.0, cmax=..., mode='F').save(filenametiff)
             # scipym.imsave(filenametiff, imagearray)
