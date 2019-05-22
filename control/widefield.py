@@ -34,15 +34,21 @@ class WidefieldWidget(QtGui.QFrame):
         self.setPoint = 0
         self.n = 1
         self.max_dev = 0
-        self.scansPerS = 15
-        self.frameTime = 1000 / self.scansPerS
+        self.fps = 15
+        self.savefps = 1
+        self.frameTime = 1000 / self.fps
         self.camOnVar = False
+        self.contRecVar = False
 
         self.camDialogButton = QtGui.QPushButton('Camera Dialog')
         self.camDialogButton.clicked.connect(self.webcam.show_dialog)
         self.snapshotButton = QtGui.QPushButton('Take snapshot')
         self.snapshotButton.clicked.connect(self.webcamGraph.takeSnapshot())
         self.camOnBox = QtGui.QCheckBox('Camera on')
+        self.savefpsLabel = QtGui.QLabel('Save FPS')
+        self.savefpsEdit = QtGui.QLineEdit('1')
+        self.changesavefpsButton = QtGui.QPushButton('Change save FPS')
+        self.changesavefpsButton.clicked.connect(self.changeSaveFPS())
 
         # Widefield webcam graph widget
         self.webcamGraph = WebcamGraph()
@@ -62,10 +68,9 @@ class WidefieldWidget(QtGui.QFrame):
         grid.addWidget(self.camDialogButton, 4, 2, 1, 5)
         grid.addWidget(self.camOnBox, 4, 1)
         grid.addWidget(self.snapshotButton, 5, 2, 1, 5)
-
-#        grid.setColumnMinimumWidth(1, 100)
-#        grid.setColumnMinimumWidth(2, 40)
-#        grid.setColumnMinimumWidth(0, 100)
+        grid.addWidget(self.savefpsLabel, 4, 1)
+        grid.addWidget(self.savefpsEdit, 6, 0, 1, 2)
+        grid.addWidget(self.changesavefpsButton, 6, 2, 1, 2)
 
         self.camOnBox.stateChanged.connect(self.camOnVarChange)
 
@@ -76,6 +81,15 @@ class WidefieldWidget(QtGui.QFrame):
         else:
             self.camOnVar = True
             self.timer.start(self.frameTime)
+
+    def contRecVarChange(self):
+        if self.contRecVar:
+            self.contRecVar = False
+        else:
+            self.contRecVar = True
+            
+    def changeSaveFPS(self):
+        self.savefps = np.float(self.savefpsEdit.text())
 
     def closeEvent(self, *args, **kwargs):
         super().closeEvent(*args, **kwargs)
@@ -94,6 +108,7 @@ class ProcessDataThread(QtCore.QThread):
         # Grab camera image
         self.webcamImage = self.webcam.grab_image()
         self.sensorSize = np.array(self.image.shape)
+        self.contRecCount = 0  # Counter that keeps track of which frames to save in continuous recordings
 
     def update(self):
         if self.widefieldWidget.camOnVar:
@@ -102,13 +117,15 @@ class ProcessDataThread(QtCore.QThread):
                 self.webcamImage = self.webcam.grab_image()
                 # now = time.time()
                 # print("WF: Whole grab image took: ", now-then, " seconds")
-                # print("")
             except:
                 pass
-            # imagearray = np.array(self.image)
-            # imagearray = resize(imagearray, (256, 320))
-            # imagearraygf = ndi.filters.gaussian_filter(imagearray, 3)  # Gaussian filter the image, to remove noise.
             self.widefieldWidget.webcamGraph.update(self.webcamImage)
+        if self.widefieldWidget.contRecVar:
+            self.contRecCount = self.contRecCount + 1
+            if np.floor(np.mod(self.contRecCount, self.widefieldWidget.fps/self.widefieldWidget.savefps)) == 0:
+                # do this if the number of reccount since last saved frame is more than the number of frames between each saved frame that we want
+                self.takeSnapshot(self)
+                self.contRecCount = 0
 
     def takeSnapshot(self):
         if self.widefieldWidget.camOnVar:
