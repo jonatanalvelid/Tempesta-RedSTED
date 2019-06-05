@@ -361,3 +361,15 @@ class ScanZ(object):
             return scan
         except:
             return mockers.MockPCZPiezo()
+
+
+class XYStage(object):
+    def __new__(cls, *args):
+
+        try:
+            from control.xystage import MHXYStage
+            xyscan = MHXYStage(*args)
+            xyscan.initialize()
+            return xyscan
+        except:
+            return mockers.MockMHXYStage()
