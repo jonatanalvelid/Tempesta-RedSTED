@@ -54,6 +54,62 @@ def topHat(sizex, sizey, r, sigma, u, v):
     return mask
 
 
+def HalfPattern(sizex, sizey, r, u, v, rotang):
+    """Creates a top hat mask with radius r. The input beam is supposed gaussain
+    with a standard deviation sigma."""
+    mask = np.zeros((sizex, sizey), dtype="float")
+    y, x = np.ogrid[-sizex//2-u:sizex//2-u, -sizey//2-v:sizey//2-v]
+    d2 = x**2 + y**2
+    theta = np.arctan2(x, y) + rotang
+    midLine = (abs(theta) < np.pi / 2)*(d2 <= r**2)
+    mask[midLine] = np.pi
+    return mask
+
+
+def QuadrantPattern(sizex, sizey, r, u, v, rotang):
+    """Creates a top hat mask with radius r. The input beam is supposed gaussain
+    with a standard deviation sigma."""
+    mask = np.zeros((sizex, sizey), dtype="float")
+    y, x = np.ogrid[-sizex//2-u:sizex//2-u, -sizey//2-v:sizey//2-v]
+    theta = np.arctan2(x, y) + rotang
+    d2 = x**2 + y**2
+    quadLine = (theta < np.pi)*(theta > np.pi / 2)*(d2<=r**2)+ (theta < 0 )*(theta > -np.pi / 2)*(d2 <= r**2)
+    mask[quadLine] = np.pi
+    return mask
+
+
+def HexPattern(sizex, sizey, r, u, v, rotang):
+    """Creates a top hat mask with radius r. The input beam is supposed gaussain
+    with a standard deviation sigma."""
+    mask = np.zeros((sizex, sizey), dtype="float")
+    y, x = np.ogrid[-sizex//2-u:sizex//2-u, -sizey//2-v:sizey//2-v]
+    theta = np.arctan2(x, y) + rotang
+    d2 = x**2 + y**2
+    hexLine = (theta < np.pi / 3)*(theta > 0)*(d2<=r**2)+ (theta > -2 * np.pi / 3)*(theta < -np.pi / 3)*(d2 <= r**2) + (theta > 2 * np.pi / 3)*(theta < np.pi)*(d2<=r**2) 
+    mask[hexLine] = np.pi
+    return mask
+
+
+def SplitBullseyePattern(sizex, sizey, r, u, v, rotang):
+    """Creates a top hat mask with radius r. The input beam is supposed gaussain
+    with a standard deviation sigma."""
+    radius_factor = 0.6
+    mask = np.zeros((sizex, sizey), dtype="float")
+    mask1 = np.zeros((sizex, sizey), dtype="float")
+    mask2 = np.zeros((sizex, sizey), dtype="float")
+    #Looking for the middle of the gaussian intensity distribution:
+    mid_radius = radius_factor * r
+    y, x = np.ogrid[-sizex//2-u:sizex//2-u, -sizey//2-v:sizey//2-v]
+    theta = np.arctan2(x, y) + rotang
+    d2 = x**2 + y**2
+    ring = (d2 <= r**2)*(d2 > mid_radius**2)
+    mask1[ring] = np.pi
+    midLine = (abs(theta) < np.pi / 2)*(d2 <= r**2)
+    mask2[midLine] = np.pi
+    mask = (mask1 + mask2) % (2 * np.pi)
+    return mask
+
+
 def aberrationsMask(sizex, sizey, r, u, v, aberrationFactors):
     """Creates a top hat mask with radius r. The input beam is supposed gaussain
     with a standard deviation sigma."""
