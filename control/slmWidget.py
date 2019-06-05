@@ -329,7 +329,7 @@ class slmWidget(QtGui.QFrame):
     def loadParamGaussian(self):
         """loads the parameters from a previous configuration"""
         self.gaussiansBool = True
-"""
+        """
         with open('informations.bbn', 'rb') as f:
             depickler = pickle.Unpickler(f)
             state = depickler.load()
@@ -339,7 +339,7 @@ class slmWidget(QtGui.QFrame):
         print("Load: centers", mask_state)
         self.left_center = mask_state["left_center"]
         self.right_center = mask_state["right_center"]
-"""
+        """
         self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), left_pos=self.left_center, right_pos=self.right_center)
         # self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.DaberrationFactors, self.THaberrationFactors, self.left_center, self.right_center, self.helix_rotPar.value())
         self.maskMask.tilt(self.anglePar.value())
@@ -491,8 +491,6 @@ class ArrowsControl(QtGui.QFrame):
         self.arrow_layout.addWidget(self.blackButton, 4, 2)
         self.arrow_layout.addWidget(self.gaussiansButton, 5, 2)
 
-<<<<<<< HEAD
-=======
         self.arrow_layout.addWidget(self.halfButton, 6, 0)
         self.arrow_layout.addWidget(self.quadrantButton, 7, 0)
         self.arrow_layout.addWidget(self.hexButton, 6, 2)
@@ -504,7 +502,6 @@ class ArrowsControl(QtGui.QFrame):
         self.arrow_layout.addWidget(self.leftPatternBox, 10, 0)
         self.arrow_layout.addWidget(self.rightPatternBox, 10, 2)
 
->>>>>>> AddingAbCorrCheckPatterns
         # Definition of the global layout:
         self.layout = QtGui.QVBoxLayout()
         self.setLayout(self.layout)
