@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct  1 13:41:48 2014
+Created on Wed Oct 1 13:41:48 2014
 
-@authors: Federico Barabas, Luciano Masullo, Shusei Masuda
+@authors: Federico Barabas, Luciano Masullo, Shusei Masuda, Jonatan Alvelid
 """
 
 import numpy as np
@@ -19,17 +19,15 @@ from lantz import Q_
 import control.pi as pi
 import control.instruments as instruments
 
-""""from instrumental import u"""
-
 
 class FocusWidget(QtGui.QFrame):
 
     def __init__(self, scanZ, webcam, main=None, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.setMinimumSize(2, 350)
+        self.setMinimumSize(2, 350)  # Set the minimum size of the widget
 
-        self.main = main  # main va a ser RecordingWidget de control.py
+        self.main = main
         self.z = scanZ
         self.webcam = webcam
         self.setPoint = 0
@@ -167,8 +165,13 @@ class FocusWidget(QtGui.QFrame):
         self.aboutToLock = False
         if self.lockButton.isChecked():
             self.lockFocusFirst()
+            self.lockButton.setText('Unlock')
         else:
             self.unlockFocus()
+            self.lockButton.setText('Lock')
+            
+    def mockFocusPress(self):
+        print('Focus is locked! (sure, you thought so, no?)')
 
     def zStackVarChange(self):
         if self.zStackVar:
@@ -184,7 +187,6 @@ class FocusWidget(QtGui.QFrame):
 
     def lockFocus(self):
         if not self.locked:
-            # self.dataPoints = self.focusLockGraph.dumpData()
             self.lockingpoints = np.sort(self.dataPoints)
             self.lockingpoints = np.delete(self.lockingpoints, 0)
             self.lockingpoints = np.delete(self.lockingpoints, -1)
@@ -198,7 +200,6 @@ class FocusWidget(QtGui.QFrame):
             self.locked = True
             self.stepDistLow = 0.001 * np.float(self.zStepFromEdit.text())
             self.stepDistHigh = 0.001 * np.float(self.zStepToEdit.text())
-            # print('Locked (z-step)!')
             print(self.stepDistance)
             print('%.2f s' % self.zsteptime)
             print(' ')
@@ -215,17 +216,27 @@ class FocusWidget(QtGui.QFrame):
             self.locked = True
             self.stepDistLow = 0.001 * np.float(self.zStepFromEdit.text())
             self.stepDistHigh = 0.001 * np.float(self.zStepToEdit.text())
-            # print('Locked!')
 
+    def lockFocusSetPos(self, newFocusPos):
+        if not self.locked:
+            self.setPoint = newFocusPos
+            self.focusLockGraph.line = self.focusLockGraph.plot.addLine(
+                                                    y=self.setPoint, pen='r')
+            self.PI = pi.PI(self.setPoint, 0.001,
+                            np.float(self.kpEdit.text()),
+                            np.float(self.kiEdit.text()))
+            self.initialZ = self.z.absZ
+            self.locked = True
+            self.stepDistLow = 0.001 * np.float(self.zStepFromEdit.text())
+            self.stepDistHigh = 0.001 * np.float(self.zStepToEdit.text())
+            
     def unlockFocus(self):
         if self.locked:
             self.locked = False
             self.lockButton.setChecked(False)
             self.focusLockGraph.plot.removeItem(self.focusLockGraph.line)
-            # print('Unlocked!')
 
     def updatePI(self):
-
         if not self.noStepVar:
             self.noStepVar = True
         self.currentZ = self.z.absZ
@@ -255,10 +266,23 @@ class FocusWidget(QtGui.QFrame):
         self.dataPoints[:-1] = self.dataPoints[1:]
         self.dataPoints[-1] = self.processDataThread.focusSignal
         self.averageDiff = np.std(self.dataPoints)
-        # print(self.averageDiff)
         if self.averageDiff < 0.4:
             self.lockFocus()
             self.aboutToLock = False
+
+    def tilingStep(self, newFocusPos=False):
+        # Call this function whenever there is a tiling step taken. Lock the focus in a new position.
+        # Do it at a sensed new position, as a z-step, if not newFocusPos is given as the new focal position.
+        if not newFocusPos:
+            self.dataPoints = np.zeros(5)
+            self.averageDiff = 10
+            self.aboutToLock = True
+        else:
+            self.lockFocusSetPos(newFocusPos)
+
+    def getFocusPosition(self):
+        # Return the current focus locked spot position
+        return self.setPoint
 
     def exportData(self):
         self.sizeofData = np.size(self.graph.savedDataSignal)
@@ -266,15 +290,15 @@ class FocusWidget(QtGui.QFrame):
                     self.graph.savedDataSignal, np.ones(self.sizeofData)*self.setPoint])
         np.savetxt('focusreaddata.txt', self.savedData)
 
-        #self.sizeofCData = np.size(self.savedCommandsData)
-        #self.savedCData = np.transpose([self.savedCommandsTime, self.savedCommandsData])
-        #print(np.transpose([self.savedCommandsData, self.savedCommandsTime]))
-        #np.savetxt('focuscommandsdata.txt', self.savedCData)
+        # self.sizeofCData = np.size(self.savedCommandsData)
+        # self.savedCData = np.transpose([self.savedCommandsTime, self.savedCommandsData])
+        # print(np.transpose([self.savedCommandsData, self.savedCommandsTime]))
+        # np.savetxt('focuscommandsdata.txt', self.savedCData)
 
         self.graph.savedDataSignal = []
         self.graph.savedDataTime = []
-        #self.savedCommandsData = []
-        #self.savedCommandsTime = []
+        # self.savedCommandsData = []
+        # self.savedCommandsTime = []
 
     def analizeFocus(self):
         if self.n == 1:
