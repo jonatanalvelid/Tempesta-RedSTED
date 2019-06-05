@@ -185,28 +185,28 @@ class slmWidget(QtGui.QFrame):
         self.update()
 
     def setHalf(self):
-        """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
+        """Sets the current masks to half masks, with the same center, for accurate center position determination."""
         self.maskMask = Mask.Half(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
     def setQuadrant(self):
-        """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
+        """Sets the current masks to quadrant masks, with the same center, for astigmatism aberration determination."""
         self.maskMask = Mask.Quad(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
     def setHex(self):
-        """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
+        """Sets the current masks to hexagonal masks, with the same center, for trefoil aberration determination."""
         self.maskMask = Mask.Hex(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
     def setSplit(self):
-        """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
+        """Sets the current masks to split bullseye masks, with the same center, for coma aberration determination."""
         self.maskMask = Mask.Split(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
