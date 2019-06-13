@@ -15,11 +15,13 @@ n = 792
 
 
 class slmWidget(QtGui.QFrame):
-    """Class creating a GUI to control the phase pattern displayed by the SLM. In this version, it is optimized to
-    display and address 2 masks independently. The whole image is separated in two: one left part and right part.
-    One part is selected at a time and can be controlled with the arrows from *ArrowsControl*.
-    :param SLMdisplay slm: instance of a second monitor generatd via slmpy.
-    Communication with the SLM is initiated when Tempesta is started along with all other instruments"""
+    """Class creating a GUI to control the phase pattern displayed by the SLM.
+    In this version, it is optimized to display and address 2 masks
+    independently. The whole image is separated in two: one left part and
+    right part. One part is selected at a time and can be controlled with the
+    arrows from *ArrowsControl*. :param SLMdisplay slm: instance of a second
+    monitor generatd via slmpy. Communication with the SLM is initiated when
+    Tempesta is started along with all other instruments"""
     def __init__(self, slm, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -51,12 +53,32 @@ class slmWidget(QtGui.QFrame):
         self.fTHVertAstPar = self.treeAber.p.param("TH Vertical astigmatism factor")
         self.fTHOblAstPar = self.treeAber.p.param("TH Oblique astigmatism factor")
 
-        self.DaberrationFactors = np.array([self.fDTilt.value(), self.fDTip.value(), self.fDDefocPar.value(), self.fDSphPar.value(), self.fDVertComaPar.value(), self.fDHozComaPar.value(), self.fDVertAstPar.value(), self.fDOblAstPar.value()])
-        self.THaberrationFactors = np.array([self.fTHTilt.value(), self.fTHTip.value(), self.fTHDefocPar.value(), self.fTHSphPar.value(), self.fTHVertComaPar.value(), self.fTHHozComaPar.value(), self.fTHVertAstPar.value(), self.fTHOblAstPar.value()])
+        self.DaberrationFactors = np.array([self.fDTilt.value(),
+                                            self.fDTip.value(),
+                                            self.fDDefocPar.value(),
+                                            self.fDSphPar.value(),
+                                            self.fDVertComaPar.value(),
+                                            self.fDHozComaPar.value(),
+                                            self.fDVertAstPar.value(),
+                                            self.fDOblAstPar.value()])
+        self.THaberrationFactors = np.array([self.fTHTilt.value(),
+                                             self.fTHTip.value(),
+                                             self.fTHDefocPar.value(),
+                                             self.fTHSphPar.value(),
+                                             self.fTHVertComaPar.value(),
+                                             self.fTHHozComaPar.value(),
+                                             self.fTHVertAstPar.value(),
+                                             self.fTHOblAstPar.value()])
 
         self.slm = slm
-        self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value())
-        self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.DaberrationFactors, self.THaberrationFactors)
+        self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(),
+                                       self.RPar.value(),
+                                       self.sigmaPar.value())
+        self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(),
+                                         self.RPar.value(),
+                                         self.sigmaPar.value(),
+                                         self.DaberrationFactors,
+                                         self.THaberrationFactors)
 
         self.maskMask.tilt(self.anglePar.value())
         self.mask = self.maskMask + self.maskAber
@@ -65,7 +87,8 @@ class slmWidget(QtGui.QFrame):
 
         self.gaussiansBool = False
 
-        # Indicates wether each side of the mask is actually displaying a mask or not
+        # Indicates wether each side of the mask is actually displaying
+        # a mask or not
         self.black_left = False
         self.black_right = False
 
@@ -74,7 +97,8 @@ class slmWidget(QtGui.QFrame):
         self.updateButton = QtGui.QPushButton('Update')
         self.updateButton.setCheckable(True)
         self.updateButton.clicked.connect(self.update)
-        self.updateButton.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+        self.updateButton.setSizePolicy(QtGui.QSizePolicy.Preferred,
+                                        QtGui.QSizePolicy.Expanding)
 
         self.applyPar = self.tree.p.param('Apply')
         self.applyPar.sigStateChanged.connect(self.apply)
@@ -87,19 +111,21 @@ class slmWidget(QtGui.QFrame):
         self.img = pg.ImageItem()
         image = self.mask.img
         image = np.fliplr(image.transpose())
-        self.img.setImage(image, autoLevels=False, autoDownsample=True, autoRange=True)
+        self.img.setImage(image, autoLevels=False, autoDownsample=True,
+                          autoRange=True)
         self.vb.addItem(self.img)
         self.vb.setAspectLocked(True)
         self.slm.updateArray(self.mask)
 
         self.arrowsModule = ArrowsControl()
 
-        # Link between the buttons in the arrow module and the functions to control the SLM
+        # Link between the buttons in the arrow module and the functions to
+        # control the SLM
         self.arrowsModule.upButton.clicked.connect(self.upClicked)
         self.arrowsModule.downButton.clicked.connect(self.downClicked)
         self.arrowsModule.leftButton.clicked.connect(self.leftClicked)
         self.arrowsModule.rightButton.clicked.connect(self.rightClicked)
-        self.arrowsModule.saveButton.clicked.connect(self.save)
+        self.arrowsModule.saveButton.clicked.connect(self.saveParam)
         self.arrowsModule.loadButton.clicked.connect(self.loadParam)
         self.arrowsModule.blackButton.clicked.connect(self.setBlack)
         self.arrowsModule.gaussiansButton.clicked.connect(self.setGaussians)
@@ -138,8 +164,8 @@ class slmWidget(QtGui.QFrame):
         self.moveMask(0, self.arrowsModule.increment.value())
 
     def moveMask(self, x, y):
-        """Sends instruction to both the SLM and the display to move the corresponding mask
-        when one arrow is pressed.
+        """Sends instruction to both the SLM and the display to move the
+        corresponding mask when one arrow is pressed.
         :param int x: new x position of the center of the Mask
         :param int y: new y position of the center of the Mask"""
 
@@ -155,12 +181,13 @@ class slmWidget(QtGui.QFrame):
         self.maskAber.update()
         self.update()
 
-        
+
         ### I AM HERE ###
-        
-        
+
+
     def setBlack(self):
-        """Sets the current mask to a black (null phase) Mask. Useful to check the masks one by one"""
+        """Sets the current mask to a black (null phase) Mask.
+        Useful to check the masks one by one"""
         if(str(self.arrowsModule.maskMenu.currentText()) == "Donut"):
             self.maskMask.left.setBlack()
             self.maskAber.left.setBlack()
@@ -176,42 +203,72 @@ class slmWidget(QtGui.QFrame):
         self.update()
 
     def setGaussians(self):
-        """Sets the current masks to Gaussian masks, with the same center. Useful for alignment."""
+        """Sets the current masks to Gaussian masks, with the same center.
+        Useful for alignment."""
         """
         self.mask=Mask.Gaussians(m,n,self.lbdPar.value(),self.RPar.value(),self.sigmaPar.value());
         self.mask.tilt(self.anglePar.value()
         """
         # self.loadParamGaussian()
-        self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center)
+        self.gaussiansBool = True
+        self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(),
+                                       self.RPar.value(),
+                                       self.sigmaPar.value(),
+                                       self.left_center,
+                                       self.right_center)
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         # self.maskAber.update()
         self.update()
 
     def setHalf(self):
-        """Sets the current masks to half masks, with the same center, for accurate center position determination."""
-        self.maskMask = Mask.Half(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
+        """Sets the current masks to half masks, with the same center,
+        for accurate center position determination."""
+        self.maskMask = Mask.Half(m, n, self.lbdPar.value(),
+                                  self.RPar.value(),
+                                  self.sigmaPar.value(),
+                                  self.left_center,
+                                  self.right_center,
+                                  np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
     def setQuadrant(self):
-        """Sets the current masks to quadrant masks, with the same center, for astigmatism aberration determination."""
-        self.maskMask = Mask.Quad(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
+        """Sets the current masks to quadrant masks, with the same center,
+        for astigmatism aberration determination."""
+        self.maskMask = Mask.Quad(m, n, self.lbdPar.value(),
+                                  self.RPar.value(),
+                                  self.sigmaPar.value(),
+                                  self.left_center,
+                                  self.right_center,
+                                  np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
     def setHex(self):
-        """Sets the current masks to hexagonal masks, with the same center, for trefoil aberration determination."""
-        self.maskMask = Mask.Hex(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
+        """Sets the current masks to hexagonal masks, with the same center,
+        for trefoil aberration determination."""
+        self.maskMask = Mask.Hex(m, n, self.lbdPar.value(),
+                                 self.RPar.value(),
+                                 self.sigmaPar.value(),
+                                 self.left_center,
+                                 self.right_center,
+                                 np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
     def setSplit(self):
-        """Sets the current masks to split bullseye masks, with the same center, for coma aberration determination."""
-        self.maskMask = Mask.Split(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, np.float(self.arrowsModule.rotAngEdit.text()))
+        """Sets the current masks to split bullseye masks, with the same
+        center, for coma aberration determination."""
+        self.maskMask = Mask.Split(m, n, self.lbdPar.value(),
+                                   self.RPar.value(),
+                                   self.sigmaPar.value(),
+                                   self.left_center,
+                                   self.right_center,
+                                   np.float(self.arrowsModule.rotAngEdit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
@@ -237,21 +294,53 @@ class slmWidget(QtGui.QFrame):
         self.fTHVertAstPar = self.treeAber.p.param("TH Vertical astigmatism factor")
         self.fTHOblAstPar = self.treeAber.p.param("TH Oblique astigmatism factor")
 
-        self.DaberrationFactors = np.array([self.fDTilt.value(), self.fDTip.value(), self.fDDefocPar.value(), self.fDSphPar.value(), self.fDVertComaPar.value(), self.fDHozComaPar.value(), self.fDVertAstPar.value(), self.fDOblAstPar.value()])
-        self.THaberrationFactors = np.array([self.fTHTilt.value(), self.fTHTip.value(), self.fTHDefocPar.value(), self.fTHSphPar.value(), self.fTHVertComaPar.value(), self.fTHHozComaPar.value(), self.fTHVertAstPar.value(), self.fTHOblAstPar.value()])
+        self.DaberrationFactors = np.array([self.fDTilt.value(),
+                                            self.fDTip.value(),
+                                            self.fDDefocPar.value(),
+                                            self.fDSphPar.value(),
+                                            self.fDVertComaPar.value(),
+                                            self.fDHozComaPar.value(),
+                                            self.fDVertAstPar.value(),
+                                            self.fDOblAstPar.value()])
+        self.THaberrationFactors = np.array([self.fTHTilt.value(),
+                                             self.fTHTip.value(),
+                                             self.fTHDefocPar.value(),
+                                             self.fTHSphPar.value(),
+                                             self.fTHVertComaPar.value(),
+                                             self.fTHHozComaPar.value(),
+                                             self.fTHVertAstPar.value(),
+                                             self.fTHOblAstPar.value()])
 
         if self.gaussiansBool:
-            self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), left_pos=self.left_center, right_pos=self.right_center)
+            self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(),
+                                           self.RPar.value(),
+                                           self.sigmaPar.value(),
+                                           left_pos=self.left_center,
+                                           right_pos=self.right_center)
         else:
-            self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.left_center, self.right_center, self.helix_rotPar.value())
+            self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(),
+                                           self.RPar.value(),
+                                           self.sigmaPar.value(),
+                                           self.left_center,
+                                           self.right_center,
+                                           self.helix_rotPar.value())
         self.maskMask.tilt(self.anglePar.value())
-        self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.DaberrationFactors, self.THaberrationFactors, self.left_center, self.right_center, self.helix_rotPar.value())
+        self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(),
+                                         self.RPar.value(),
+                                         self.sigmaPar.value(),
+                                         self.DaberrationFactors,
+                                         self.THaberrationFactors,
+                                         self.left_center,
+                                         self.right_center,
+                                         self.helix_rotPar.value())
 
         self.update()
 
     def update(self):
-        """When any parameter changes, sends the new image to the SLM and the display"""
-        # Changing the orientation of image so they have the same orientation on the slm and on the screen
+        """When any parameter changes, sends the new image to the SLM and the
+        display"""
+        # Changing the orientation of image so they have the same orientation
+        # on the slm and on the screen
         self.left_center = self.maskMask.left_center
         self.right_center = self.maskMask.right_center
         self.mask = self.maskMask + self.maskAber
@@ -263,35 +352,63 @@ class slmWidget(QtGui.QFrame):
     def closeEvent(self, *args, **kwargs):
         super().closeEvent(*args, **kwargs)
 
-    def save(self):
-        """Saves the current SLM configuration, in particular the position of the Masks.
-        The informations are stored in a file 'informations.bbn' (arbitrary extension) with the module pickle. """
+    def saveParam(self):
+        """Saves the current SLM configuration, in particular the position of
+        the Masks. The informations are stored in a file 'informations.bbn'
+        (arbitrary extension) with the module pickle. Separate files are
+        saved depending on if you use the glycerol or oil objective. """
         state = self.tree.p.saveState()
-        mask_state = {"left_center": self.maskMask.left_center, "right_center": self.maskMask.right_center}
-        with open("informations.bbn", "wb") as f:
-            pickler = pickle.Pickler(f)
-            pickler.dump(state)
-            pickler.dump(mask_state)
-
+        mask_state = {"left_center": self.maskMask.left_center,
+                      "right_center": self.maskMask.right_center}
         stateAber = self.treeAber.p.saveState()
-        with open("informationsAber.bbn", "wb") as fAber:
-            pickler = pickle.Pickler(fAber)
-            pickler.dump(stateAber)
+
+        if(str(self.objlensModule.maskMenu.currentText()) == "Oil"):
+            with open("informationsOil.bbn", "wb") as f:
+                pickler = pickle.Pickler(f)
+                pickler.dump(state)
+                pickler.dump(mask_state)
+            with open("informationsAberOil.bbn", "wb") as fAber:
+                pickler = pickle.Pickler(fAber)
+                pickler.dump(stateAber)
+        elif(str(self.objlensModule.maskMenu.currentText()) == "Glycerol"):
+            with open("informationsGlyc.bbn", "wb") as f:
+                pickler = pickle.Pickler(f)
+                pickler.dump(state)
+                pickler.dump(mask_state)
+            with open("informationsAberGlyc.bbn", "wb") as fAber:
+                pickler = pickle.Pickler(fAber)
+                pickler.dump(stateAber)
+        elif(str(self.objlensModule.maskMenu.currentText()) == "No objective"):
+            print('You have to choose an objective in the drop down menu!')
+
         print("Saved all parameters...")
         return
 
     def loadParam(self):
-        """loads the parameters from a previous configuration"""
+        """loads the parameters from a previous configuration. Depending on
+        which objective is in use, load different parameter files. """
         self.gaussiansBool = False
 
-        with open('informations.bbn', 'rb') as f:
-            depickler = pickle.Unpickler(f)
-            state = depickler.load()
-            mask_state = depickler.load()
+        if(str(self.objlensModule.maskMenu.currentText()) == "Oil"):
+            with open('informationsOil.bbn', 'rb') as f:
+                depickler = pickle.Unpickler(f)
+                state = depickler.load()
+                mask_state = depickler.load()
+            with open('informationsAberOil.bbn', 'rb') as fAber:
+                depickler = pickle.Unpickler(fAber)
+                stateAber = depickler.load()
+        elif(str(self.objlensModule.maskMenu.currentText()) == "Glycerol"):
+            with open('informationsGlyc.bbn', 'rb') as f:
+                depickler = pickle.Unpickler(f)
+                state = depickler.load()
+                mask_state = depickler.load()
+            with open('informationsAberGlyc.bbn', 'rb') as fAber:
+                depickler = pickle.Unpickler(fAber)
+                stateAber = depickler.load()
+        elif(str(self.objlensModule.maskMenu.currentText()) == "No objective"):
+            print('You have to choose an objective in the drop down menu!')
 
-        with open('informationsAber.bbn', 'rb') as fAber:
-            depickler = pickle.Unpickler(fAber)
-            stateAber = depickler.load()
+        print("Loaded all parameters...")
 
         self.tree.p.restoreState(state)
         print("Load: centers", mask_state)
@@ -315,41 +432,48 @@ class slmWidget(QtGui.QFrame):
         self.fTHVertAstPar = self.treeAber.p.param("TH Vertical astigmatism factor")
         self.fTHOblAstPar = self.treeAber.p.param("TH Oblique astigmatism factor")
 
-        self.DaberrationFactors = np.array([self.fDTilt.value(), self.fDTip.value(), self.fDDefocPar.value(), self.fDSphPar.value(), self.fDVertComaPar.value(), self.fDHozComaPar.value(), self.fDVertAstPar.value(), self.fDOblAstPar.value()])
-        self.THaberrationFactors = np.array([self.fTHTilt.value(), self.fTHTip.value(), self.fTHDefocPar.value(), self.fTHSphPar.value(), self.fTHVertComaPar.value(), self.fTHHozComaPar.value(), self.fTHVertAstPar.value(), self.fTHOblAstPar.value()])
+        self.DaberrationFactors = np.array([self.fDTilt.value(),
+                                            self.fDTip.value(),
+                                            self.fDDefocPar.value(),
+                                            self.fDSphPar.value(),
+                                            self.fDVertComaPar.value(),
+                                            self.fDHozComaPar.value(),
+                                            self.fDVertAstPar.value(),
+                                            self.fDOblAstPar.value()])
+        self.THaberrationFactors = np.array([self.fTHTilt.value(),
+                                             self.fTHTip.value(),
+                                             self.fTHDefocPar.value(),
+                                             self.fTHSphPar.value(),
+                                             self.fTHVertComaPar.value(),
+                                             self.fTHHozComaPar.value(),
+                                             self.fTHVertAstPar.value(),
+                                             self.fTHOblAstPar.value()])
 
         self.left_center = mask_state["left_center"]
         self.right_center = mask_state["right_center"]
 
-        self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), left_pos=self.left_center, right_pos=self.right_center)
+        self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(),
+                                       self.RPar.value(),
+                                       self.sigmaPar.value(),
+                                       left_pos=self.left_center,
+                                       right_pos=self.right_center)
         self.maskMask.tilt(self.anglePar.value())
-        self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.DaberrationFactors, self.THaberrationFactors, left_pos=self.left_center, right_pos=self.right_center)
+        self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(),
+                                         self.RPar.value(),
+                                         self.sigmaPar.value(),
+                                         self.DaberrationFactors,
+                                         self.THaberrationFactors,
+                                         left_pos=self.left_center,
+                                         right_pos=self.right_center)
         self.update()
-
-    def loadParamGaussian(self):
-        """loads the parameters from a previous configuration"""
-        self.gaussiansBool = True
-        """
-        with open('informations.bbn', 'rb') as f:
-            depickler = pickle.Unpickler(f)
-            state = depickler.load()
-            mask_state = depickler.load()
-
-        self.tree.p.restoreState(state)
-        print("Load: centers", mask_state)
-        self.left_center = mask_state["left_center"]
-        self.right_center = mask_state["right_center"]
-        """
-        self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), left_pos=self.left_center, right_pos=self.right_center)
-        # self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(), self.RPar.value(), self.sigmaPar.value(), self.DaberrationFactors, self.THaberrationFactors, self.left_center, self.right_center, self.helix_rotPar.value())
-        self.maskMask.tilt(self.anglePar.value())
-        # self.update()
 
 
 class SLMParamTree(ParameterTree):
-    """ Parameter Tree containing the different parameters for the SLM's phase masks. These parameters are:
+    """ Parameter Tree containing the different parameters for the SLM's
+    phase masks. These parameters are:
     Radius (int): of circular phase masks, in pixels
-    sigma (float): std of the incident gaussian beam, to determine the inner radius of a top-hat phase mask, in pixels.
+    sigma (float): std of the incident gaussian beam, to determine the inner
+                    radius of a top-hat phase mask, in pixels.
     angle (float): in an off-axis configuration.
     lambda depletion (nm): the wavelength incident on the SLM.
     """
@@ -372,9 +496,11 @@ class SLMParamTree(ParameterTree):
 
 
 class SLMParamTreeAber(ParameterTree):
-    """ Parameter Tree containing the different parameters for the SLM's phase masks. These parameters are:
+    """ Parameter Tree containing the different parameters for the SLM's
+    phase masks. These parameters are:
     Radius (int): of circular phase masks, in pixels
-    sigma (float): std of the incident gaussian beam, to determine the inner radius of a top-hat phase mask, in pixels.
+    sigma (float): std of the incident gaussian beam, to determine the inner
+                    radius of a top-hat phase mask, in pixels.
     angle (float): in an off-axis configuration.
     lambda depletion (nm): the wavelength incident on the SLM.
     """
@@ -408,21 +534,30 @@ class SLMParamTreeAber(ParameterTree):
 
 
 class ArrowsControl(QtGui.QFrame):
-    """This widget creates four buttons able to move a circular phase mask with a tunable number of pixels.
-    Useful to align the phase mask with the incident beam without touching any optics."""
+    """This widget creates four buttons able to move a circular phase mask
+    with a tunable number of pixels. Useful to align the phase mask with the
+    incident beam without touching any optics."""
     def __init__(self, *args, **kwargs):
-        #Definition of the Widget to choose left or right part of the Mask
-        super().__init__(*args,**kwargs)
+        # Definition of the Widget to choose left or right part of the Mask
+        super().__init__(*args, **kwargs)
         self.chooseInterface = QtGui.QWidget()
         self.chooseInterface_layout = QtGui.QGridLayout()
         self.chooseInterface.setLayout(self.chooseInterface_layout)
 
+        # Choose which mask to modify
         self.maskMenu = QtGui.QComboBox()
         self.maskMenu.addItem("Donut")
         self.maskMenu.addItem("Top hat")
-
         self.chooseInterface_layout.addWidget(QtGui.QLabel('Select part of the mask:'), 0, 0)
         self.chooseInterface_layout.addWidget(self.maskMenu, 0, 1)
+
+        # Choose which objective is in use
+        self.objlensMenu = QtGui.QComboBox()
+        self.objlensMenu.addItem("No objective")
+        self.objlensMenu.addItem("Oil")
+        self.objlensMenu.addItem("Glycerol")
+        self.chooseInterface_layout.addWidget(QtGui.QLabel('Select which objective is used:'), 0, 2)
+        self.chooseInterface_layout.addWidget(self.objlensMenu, 0, 3)
 
         # Defining the part with only the arrows themselves
         self.arrows = QtGui.QFrame()
@@ -431,7 +566,8 @@ class ArrowsControl(QtGui.QFrame):
 
         self.upButton = QtGui.QPushButton('Up')
         self.upButton.setCheckable(False)
-        self.upButton.setSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+        self.upButton.setSizePolicy(QtGui.QSizePolicy.Preferred,
+                                    QtGui.QSizePolicy.Expanding)
         self.upButton.setFixedSize(self.upButton.sizeHint())
 
         self.downButton = QtGui.QPushButton('Down')
@@ -447,10 +583,10 @@ class ArrowsControl(QtGui.QFrame):
         self.rightButton = QtGui.QPushButton('Right')
         self.rightButton.setCheckable(False)
         self.rightButton.setSizePolicy(QtGui.QSizePolicy.Preferred,
-                                      QtGui.QSizePolicy.Expanding)
+                                       QtGui.QSizePolicy.Expanding)
         self.rightButton.setFixedSize(self.upButton.sizeHint())
 
-        # Widget to change manually the amount of deplacement induced by the arrows
+        # Widget to change the amount of deplacement induced by the arrows
         self.incrementWidget = QtGui.QWidget()
         self.incrementLayout = QtGui.QVBoxLayout()
         self.incrementWidget.setLayout(self.incrementLayout)
@@ -476,7 +612,7 @@ class ArrowsControl(QtGui.QFrame):
 
         self.rotAngLabel = QtGui.QLabel('Pattern rotation angle [rad]')
         self.rotAngEdit = QtGui.QLineEdit('0')
-        
+
         self.leftPatternBox = QtGui.QCheckBox('Modify left')
         self.rightPatternBox = QtGui.QCheckBox('Modify right')
 
@@ -498,7 +634,7 @@ class ArrowsControl(QtGui.QFrame):
 
         self.arrow_layout.addWidget(self.rotAngLabel, 8, 1)
         self.arrow_layout.addWidget(self.rotAngEdit, 9, 1)
-        
+
         self.arrow_layout.addWidget(self.leftPatternBox, 10, 0)
         self.arrow_layout.addWidget(self.rightPatternBox, 10, 2)
 
