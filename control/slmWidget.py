@@ -362,7 +362,7 @@ class slmWidget(QtGui.QFrame):
                       "right_center": self.maskMask.right_center}
         stateAber = self.treeAber.p.saveState()
 
-        if(str(self.objlensModule.maskMenu.currentText()) == "Oil"):
+        if(str(self.arrowsModule.objlensMenu.currentText()) == "Oil"):
             with open("informationsOil.bbn", "wb") as f:
                 pickler = pickle.Pickler(f)
                 pickler.dump(state)
@@ -370,7 +370,7 @@ class slmWidget(QtGui.QFrame):
             with open("informationsAberOil.bbn", "wb") as fAber:
                 pickler = pickle.Pickler(fAber)
                 pickler.dump(stateAber)
-        elif(str(self.objlensModule.maskMenu.currentText()) == "Glycerol"):
+        elif(str(self.arrowsModule.objlensMenu.currentText()) == "Glycerol"):
             with open("informationsGlyc.bbn", "wb") as f:
                 pickler = pickle.Pickler(f)
                 pickler.dump(state)
@@ -378,7 +378,7 @@ class slmWidget(QtGui.QFrame):
             with open("informationsAberGlyc.bbn", "wb") as fAber:
                 pickler = pickle.Pickler(fAber)
                 pickler.dump(stateAber)
-        else:
+        elif(str(self.arrowsModule.objlensMenu.currentText()) == "No objective"):
             print('You have to choose an objective in the drop down menu!')
 
         print("Saved all parameters...")
@@ -389,7 +389,7 @@ class slmWidget(QtGui.QFrame):
         which objective is in use, load different parameter files. """
         self.gaussiansBool = False
 
-        if(str(self.objlensModule.maskMenu.currentText()) == "Oil"):
+        if(str(self.arrowsModule.objlensMenu.currentText()) == "Oil"):
             with open('informationsOil.bbn', 'rb') as f:
                 depickler = pickle.Unpickler(f)
                 state = depickler.load()
@@ -397,7 +397,7 @@ class slmWidget(QtGui.QFrame):
             with open('informationsAberOil.bbn', 'rb') as fAber:
                 depickler = pickle.Unpickler(fAber)
                 stateAber = depickler.load()
-        elif(str(self.objlensModule.maskMenu.currentText()) == "Glycerol"):
+        elif(str(self.arrowsModule.objlensMenu.currentText()) == "Glycerol"):
             with open('informationsGlyc.bbn', 'rb') as f:
                 depickler = pickle.Unpickler(f)
                 state = depickler.load()
@@ -405,13 +405,12 @@ class slmWidget(QtGui.QFrame):
             with open('informationsAberGlyc.bbn', 'rb') as fAber:
                 depickler = pickle.Unpickler(fAber)
                 stateAber = depickler.load()
-        else:
+        elif(str(self.arrowsModule.objlensMenu.currentText()) == "No objective"):
             print('You have to choose an objective in the drop down menu!')
-
-        print("Loaded all parameters...")
+            return
 
         self.tree.p.restoreState(state)
-        print("Load: centers", mask_state)
+        print("Load mask centers:", mask_state)
         self.treeAber.p.restoreState(stateAber)
 
         self.fDTilt = self.treeAber.p.param("D Tilt factor")
@@ -466,6 +465,7 @@ class slmWidget(QtGui.QFrame):
                                          left_pos=self.left_center,
                                          right_pos=self.right_center)
         self.update()
+        print("Loaded all parameters.")
 
 
 class SLMParamTree(ParameterTree):
