@@ -378,7 +378,7 @@ class slmWidget(QtGui.QFrame):
             with open("informationsAberGlyc.bbn", "wb") as fAber:
                 pickler = pickle.Pickler(fAber)
                 pickler.dump(stateAber)
-        elif(str(self.objlensModule.maskMenu.currentText()) == "No objective"):
+        else:
             print('You have to choose an objective in the drop down menu!')
 
         print("Saved all parameters...")
@@ -405,7 +405,7 @@ class slmWidget(QtGui.QFrame):
             with open('informationsAberGlyc.bbn', 'rb') as fAber:
                 depickler = pickle.Unpickler(fAber)
                 stateAber = depickler.load()
-        elif(str(self.objlensModule.maskMenu.currentText()) == "No objective"):
+        else:
             print('You have to choose an objective in the drop down menu!')
 
         print("Loaded all parameters...")
