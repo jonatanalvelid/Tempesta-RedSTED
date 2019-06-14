@@ -11,7 +11,6 @@ def main():
 
     from control import control
     import control.instruments as instruments
-    import specpy as sp
 
     app = QtGui.QApplication([])
 
@@ -26,24 +25,17 @@ def main():
          instruments.XYStage('COM20') as scanXY:
          # sp.Imspector() as imspector:
 
-        print('1')
         print(katanalaser.idn)
-        print('2')
         print(scanZ.idn)
-        print('3')
         print(scanXY.idn)
-        print('4')
         # print(imspector.version())
 
         webcamFocusLock = instruments.CameraTIS(0, 0, 0, 0)
-        print('5')
         webcamWidefield = instruments.CameraTIS(1, 25, 17, 725)
-        print('6')
 
         win = control.TempestaSLMKatanaGUI(greenlaser, redlaser, katanalaser,
                                            slm, scanZ, scanXY, webcamFocusLock,
                                            webcamWidefield)
-        print('7')
         win.show()
         app.exec_()
 

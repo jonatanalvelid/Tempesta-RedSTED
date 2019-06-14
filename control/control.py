@@ -40,9 +40,9 @@ class FileWarning(QtGui.QMessageBox):
 class TempestaSLMKatanaGUI(QtGui.QMainWindow):
     """Main GUI class. This class calls other modules in the control folder
 
-    :param Laser bluelaser: object controlling one laser
-    :param Laser violetlaser: object controlling one laser
-    :param Laser uvlaser: object controlling one laser
+    :param Laser greenlaser: object controlling one laser
+    :param Laser redlaser: object controlling one laser
+    :param Laser stedlaser: object controlling one laser
     :param Camera orcaflash: object controlling a CCD camera
     :param SLMdisplay slm: object controlling a SLM
     :param Scanner scanXY: object controlling a Marzhauser XY-scanning stage
@@ -52,14 +52,14 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
     liveviewStarts = QtCore.pyqtSignal()
     liveviewEnds = QtCore.pyqtSignal()
 
-    def __init__(self, bluelaser, violetlaser, uvlaser, slm, scanZ, scanXY,
+    def __init__(self, greenlaser, redlaser, stedlaser, slm, scanZ, scanXY,
                  webcamFocusLock, webcamWidefield, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
 
         # os.chdir('C:\\Users\\STEDred\Documents\TempestaSnapshots')
 
-        self.violetlaser = violetlaser
+        self.redlaser = redlaser
         self.slm = slm
         self.scanZ = scanZ
         self.scanXY = scanXY
@@ -118,7 +118,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
 
         # Laser Widget
         laserDock = Dock("Laser Control", size=(600, 500))
-        self.lasers = (bluelaser, violetlaser, uvlaser)
+        self.lasers = (greenlaser, redlaser, stedlaser)
         self.laserWidgets = LaserWidget.LaserWidget(self.lasers)
         laserDock.addWidget(self.laserWidgets)
         dockArea.addDock(laserDock)

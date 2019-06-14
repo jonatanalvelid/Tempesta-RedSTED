@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import time
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtCore
 from lantz import Q_
-import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
-from pyqtgraph.parametertree import Parameter, ParameterTree
-import numpy as np
 import control.instruments as instruments
 
 
