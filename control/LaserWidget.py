@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import time
+#import time
 from PyQt4 import QtCore
 from lantz import Q_
 from pyqtgraph.Qt import QtGui
@@ -8,23 +8,25 @@ import control.instruments as instruments
 
 
 class LaserWidget(QtGui.QFrame):
-    """Defines the layout of the whole widget including all the lasers."""
-    def __init__(self, lasers, *args, **kwargs):
+    """Defines the layout of the whole widget including laser and aotf."""
+    def __init__(self, lasers, aotf, *args, **kwargs):
         """lasers: list containing the different laser objects
         """
         super().__init__(*args, **kwargs)
 
-        self.greenlaser, self.redlaser, self.katanalaser = lasers
-        self.mW = Q_(1, 'mW')
+        self.katanalaser = lasers
+        self.aotf = aotf
+#        self.mW = Q_(1, 'mW')
+#        self.uW = Q_(1, 'uW')
 
-        self.greenControl = LaserControl(self.greenlaser,
-                                          self.greenlaser.idn,
+        self.greenControl = AOTFControl(self.aotf, '561 nm Aberrior',
                                           color=(198, 255, 0), tickInterval=5,
-                                          singleStep=0.1, modulable=False)
-        self.redControl = LaserControl(self.redlaser,
-                                          self.redlaser.idn,
+                                          singleStep=0.1, channel=1,
+                                          modulable=False)
+        self.redControl = AOTFControl(self.aotf, '640 nm PicoQuant',
                                           color=(255, 33, 0), tickInterval=5,
-                                          singleStep=0.1, modulable=False)
+                                          singleStep=0.1, channel=2,
+                                          modulable=False)
         self.katanaControl = LaserControl(self.katanalaser,
                                           self.katanalaser.idn,
                                           color=(109, 0, 0), tickInterval=5,
@@ -45,44 +47,21 @@ class LaserWidget(QtGui.QFrame):
         grid.setColumnMinimumWidth(2, 70)
         grid.setRowMinimumHeight(0,75)
 
-        # Current power update routine
-        self.updatePowers = UpdatePowers(self)
-        self.updateThread = QtCore.QThread()
-        self.updatePowers.moveToThread(self.updateThread)
-        self.updateThread.start()
-        self.updateThread.started.connect(self.updatePowers.update)
-
     def closeEvent(self, *args, **kwargs):
-        self.updateThread.terminate()
         super().closeEvent(*args, **kwargs)
 
 
-class UpdatePowers(QtCore.QObject):
-    def __init__(self, laserwidget, *args, **kwargs):
-        super(QtCore.QObject, self).__init__(*args, **kwargs)
-        self.widget = laserwidget
-
-    def update(self):
-        greenpower = '{:~}'.format(self.widget.greenlaser.power)
-        redpower = '{:~}'.format(self.widget.redlaser.power)
-        katanapower = '{:~}'.format(self.widget.katanalaser.power)
-        greenpower = '{:~}'.format(self.widget.greenlaser.power)
-        self.widget.greenControl.powerIndicator.setText(greenpower)
-        self.widget.redControl.powerIndicator.setText(redpower)
-        self.widget.katanaControl.powerIndicator.setText(katanapower)
-        time.sleep(1)
-        QtCore.QTimer.singleShot(1, self.update)
-
-
 class LaserControl(QtGui.QFrame):
-    """Controls one specific laser and associates it with a specific layout: a slider and a text box to edit the
-    Laser Power, and a switch on/off button."""
+    """Controls one specific laser and associates it with a specific layout:
+    a slider and a text box to edit the Laser Power, and a switch on/off
+    button."""
     def __init__(self, laser, name, color, tickInterval, singleStep, prange=None,
                  daq=None, port=None, invert=True, modulable=True, *args, **kwargs):
         """laser: instance of the laser to control
         name: string (ie 561nm Laser)
-        tickInterval: int, specifies the distance between two graduations on the laser slider
-        singleStep: size of the smallest increment of a laser slider"""
+        tickInterval: int, specifies the distance between two graduations on
+        the laser slider singleStep: size of the smallest increment of a laser
+        slider"""
 
         super().__init__(*args, **kwargs)
         self.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Raised)
@@ -134,15 +113,6 @@ class LaserControl(QtGui.QFrame):
         grid.setRowMinimumHeight(2, 60)
         grid.setRowMinimumHeight(6, 60)
 
-        # Digital modulation
-        if modulable:
-                self.digimodButton = QtGui.QPushButton('Digital modulation')
-                style = "background-color: rgb{}".format((160, 160, 160))
-                self.digimodButton.setStyleSheet(style)
-                self.digimodButton.setCheckable(True)
-                grid.addWidget(self.digimodButton, 6, 0)
-                self.digimodButton.toggled.connect(self.digitalMod)
-
         # Connections
         self.enableButton.toggled.connect(self.toggleLaser)
         self.slider.valueChanged[int].connect(self.changeSlider)
@@ -181,6 +151,118 @@ class LaserControl(QtGui.QFrame):
     def closeEvent(self, *args, **kwargs):
         super().closeEvent(*args, **kwargs)
 
+
+class AOTFControl(QtGui.QFrame):
+    """Controls one specific laser with the aotf and associates it with a
+    specific layout: a slider and a text box to edit the Laser Power,
+    and a switch on/off button."""
+    def __init__(self, aotf, name, color, tickInterval, singleStep, channel,
+                 prange=None, daq=None, port=None, invert=True, modulable=True,
+                 *args, **kwargs):
+        """laser: instance of the laser to control
+        name: string (ie 561nm Laser)
+        tickInterval: int, specifies the distance between two graduations on
+        the laser slider singleStep: size of the smallest increment of a laser
+        slider"""
+
+        super().__init__(*args, **kwargs)
+        self.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Raised)
+        self.aotf = aotf
+        self.channel = channel
+        
+        self.name = QtGui.QLabel(name)
+        self.name.setTextFormat(QtCore.Qt.RichText)
+        self.name.setAlignment(QtCore.Qt.AlignCenter)
+        self.powerIndicator = QtGui.QLineEdit('15 uW')
+        self.powerIndicator.setReadOnly(True)
+        self.powerIndicator.setFixedWidth(100)
+        self.setPointEdit = QtGui.QLineEdit(str(0))
+        self.setPointEdit.setFixedWidth(100)
+        self.enableButton = QtGui.QPushButton('ON')
+        self.enableButton.setFixedWidth(100)
+        style = "background-color: rgb{}".format(color)
+        self.enableButton.setStyleSheet(style)
+        self.enableButton.setCheckable(True)
+        self.name.setStyleSheet(style)
+        if(prange is None):
+            prange = (0, 1023)
+        self.maxpower = QtGui.QLabel(str(prange[1]))
+        self.maxpower.setAlignment(QtCore.Qt.AlignCenter)
+        self.slider = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.slider.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.slider.setMinimum(prange[0])
+        self.slider.setMaximum(prange[1])
+        self.slider.setTickInterval(tickInterval)
+        self.slider.setSingleStep(singleStep)
+        self.slider.setValue(0)
+        self.minpower = QtGui.QLabel(str(prange[0]))
+        self.minpower.setAlignment(QtCore.Qt.AlignCenter)
+
+        grid = QtGui.QGridLayout()
+        self.setLayout(grid)
+        grid.addWidget(self.name, 0, 0)
+        grid.addWidget(self.powerIndicator, 3, 0)
+        grid.addWidget(self.setPointEdit, 4, 0)
+        grid.addWidget(self.enableButton, 5, 0)
+        grid.addWidget(self.maxpower, 1, 1)
+        grid.addWidget(self.slider, 2, 1, 5, 1)
+        grid.addWidget(self.minpower, 7, 1)
+        grid.setRowMinimumHeight(2, 60)
+        grid.setRowMinimumHeight(6, 60)
+
+        # Connections
+        self.enableButton.toggled.connect(self.toggleLaser)
+        self.slider.valueChanged[int].connect(self.changeSlider)
+        self.setPointEdit.returnPressed.connect(self.changeEdit)
+
+    def toggleLaser(self):
+        if self.enableButton.isChecked():
+            self.enableLaser()
+        else:
+            self.disableLaser()
+
+    def digitalMod(self):
+        if self.digimodButton.isChecked():
+            self.laser.digital_mod = True
+            self.laser.enter_mod_mode()
+            print(self.laser.mod_mode)
+        else:
+            self.laser.query('cp')
+
+    def enableLaser(self):
+        """Turns on the laser, sets its power to the value specified by the textbox."""
+        self.aotf.channelOn(self.channel, 1)
+#        print('1')
+        self.aotf.power(self.channel, float(self.setPointEdit.text()))
+#        print('2')        
+        
+    def disableLaser(self):
+        """Turns off the laser."""
+#        print('3')
+        self.aotf.channelOn(self.channel, 0)
+#        print('4')
+
+    def changeSlider(self, value):
+        """called when the slider is moved, sets the power of the laser to value"""
+#        print('5')
+#        print(self.slider.value())
+        self.aotf.power(self.channel, self.slider.value())
+#        print('6')
+        self.setPointEdit.setText(str(round(self.slider.value())))
+#        print('7')
+
+    def changeEdit(self):
+        """called when the user manually changes the intensity value of the laser.
+        Sets the laser power to the corresponding value"""
+#        print('8')
+        self.aotf.power(self.channel, int(self.setPointEdit.text()))
+#        print('9')
+        self.slider.setValue(float(self.setPointEdit.text()))
+#        print('10')
+
+    def closeEvent(self, *args, **kwargs):
+        super().closeEvent(*args, **kwargs)
+        
 
 if __name__ == '__main__':
     app = QtGui.QApplication([])

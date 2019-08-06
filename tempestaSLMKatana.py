@@ -17,9 +17,7 @@ def main():
 #TO DO: create an instruments.Camera(hamamatsu) or something similar
 
 #    with instruments.Camera('hamamatsu.hamamatsu_camera.HamamatsuCameraMR') as orcaflash, \
-    with instruments.Laser('cobolt.cobolt0601.Cobolt0601', 'COM11') as greenlaser, \
-         instruments.Laser('cobolt.cobolt0601.Cobolt0601', 'COM10') as redlaser, \
-         instruments.OneFiveLaser(intensity_max=30) as katanalaser, \
+    with instruments.OneFiveLaser(intensity_max=30) as katanalaser, \
          instruments.SLM() as slm, \
          instruments.ScanZ('COM19') as scanZ, \
          instruments.XYStage('COM20') as scanXY, \
@@ -35,9 +33,9 @@ def main():
         webcamFocusLock = instruments.CameraTIS(0, 0, 0, 0)
         webcamWidefield = instruments.CameraTIS(1, 25, 17, 725)
 
-        win = control.TempestaSLMKatanaGUI(greenlaser, redlaser, katanalaser,
-                                           slm, scanZ, scanXY, webcamFocusLock,
-                                           webcamWidefield, aotf)
+        win = control.TempestaSLMKatanaGUI(katanalaser, slm, scanZ, scanXY,
+                                           webcamFocusLock, webcamWidefield,
+                                           aotf)
         win.show()
         app.exec_()
 

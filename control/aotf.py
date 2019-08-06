@@ -3,14 +3,6 @@
 Created on Wed Oct 10 17:40:53 2018
 
 @author: jonatan.alvelid
-"""
-
-# -*- coding: utf-8 -*-
-
-"""
-Created on Wed Sep  6 14:06:03 2017
-
-@author: jonatan.alvelid
 
 """
 
@@ -27,7 +19,7 @@ class AAAOTF(SerialDriver):
     ENCODING = 'ascii'
 
     RECV_TERMINATION = '\n'
-    SEND_TERMINATION = '\n'
+    SEND_TERMINATION = '\r \n'
 
     BAUDRATE = 57600
     BYTESIZE = 8
@@ -49,18 +41,32 @@ class AAAOTF(SerialDriver):
 
     def initialize(self):
         super().initialize()
+        
+        self.intensity_max = 1023  # maximum power setting for the AOTF
 
     # POWER ADJUSTMENT
 
-    @Feat()
-    def power(self, channel):
-        """ Power in dBm. """
-        return float(self.query('S').split()[0])
+#    @Feat()
+#    def power(self):
+#        """ Get power in dBm. """
+#        return float(self.query('S').split()[0])
 
-    @power.setter
+    # Use this one, but make it better later. Measure the actual power output
+    # for the different settings, fit a curve, and use the equation to
+    # correlate actual output power with the setting value, and display 
+    # output power.
+#    @power.setter
+    @Action()
     def power(self, channel, value):
         """ Power adjustment for channel X, from 0 to 1023. """
-        self.query('L' + str(channel) + 'P' + str(round(value*1023)))
+#        print('aotfpow1')
+        valueaotf = round(value/1023*1023)  # assuming input value is [0,1]
+#        print('aotfpow2')
+        if valueaotf > self.intensity_max:  # if input value higher than 1
+            valueaotf = self.intensity_max
+#        print('aotfpow3')
+        self.query('L' + str(channel) + 'P' + str(valueaotf))
+#        print('aotfpow4')
 
     # FREQUENCY ADJUSTMENT
 
@@ -71,7 +77,7 @@ class AAAOTF(SerialDriver):
 
     @frequency.setter
     def frequency(self, channel, value):
-        """ Frequency adjustment for channel X, from 0 to 1023. """
+        """ Frequency adjustment for channel X, from 74 to 158 MHz. """
         self.query('L' + str(channel) + 'F' + str(value))
 
     # CONTROL/STATUS
@@ -103,7 +109,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 #    lantz.log.log_to_screen(lantz.log.DEBUG)
-    with AAAOTF('COMXX') as inst:
+    with AAAOTF('COM18') as inst:
         if args.interactive:
             from lantz.ui.qtwidgets import start_test_app
             start_test_app(inst)
