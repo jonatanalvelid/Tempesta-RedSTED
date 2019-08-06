@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import os
 import time
 
@@ -17,6 +16,7 @@ import control.LaserWidget as LaserWidget
 # import control.Scan as Scan
 import control.focus as focus
 import control.widefield as widefield
+import control.tiling as tiling
 # import control.molecules_counter as moleculesCounter
 # import control.ontime as ontime
 # import control.tableWidget as tableWidget
@@ -27,7 +27,7 @@ import control.guitools as guitools
 # StartRecording called when "Rec" presset. Creates recording thread with RecWorker, recording is then
 # done in this seperate thread.
 
-datapath = u"C:\\Users\\aurelien.barbotin\Documents\Data\DefaultDataFolder"
+#datapath = u"C:\\Users\\aurelien.barbotin\Documents\Data\DefaultDataFolder"
 
 
 class FileWarning(QtGui.QMessageBox):
@@ -40,22 +40,32 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
 
     :param Laser bluelaser: object controlling one laser
     :param Laser violetlaser: object controlling one laser
-    :param Laser uvlaser: object controlling one laser
+    :param Laser greenlaser: object controlling one laser
+    :param Laser redlaser: object controlling one laser
+    :param Laser stedlaser: object controlling one laser
     :param Camera orcaflash: object controlling a CCD camera
     :param SLMdisplay slm: object controlling a SLM
+    :param Scanner scanXY: object controlling a Marzhauser XY-scanning stage
+    :param Scanner scanZ: object controlling a Piezoconcept Z-scanning inset
     """
 
     liveviewStarts = QtCore.pyqtSignal()
     liveviewEnds = QtCore.pyqtSignal()
 
-    def __init__(self, bluelaser, violetlaser, uvlaser, slm, scanZ,
+    def __init__(self, greenlaser, redlaser, stedlaser, slm, scanZ, scanXY,
                  webcamFocusLock, webcamWidefield, aotf, *args, **kwargs):
-
+                     
         super().__init__(*args, **kwargs)
-        self.violetlaser = violetlaser
+
+        # os.chdir('C:\\Users\\STEDred\Documents\TempestaSnapshots')
+
+        self.redlaser = redlaser
         self.slm = slm
         self.scanZ = scanZ
         self.aotf = aotf
+        self.scanXY = scanXY
+        self.imspector = sp.Imspector()
+        
         self.filewarning = FileWarning()
 
         self.s = Q_(1, 's')
@@ -110,7 +120,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
 
         # Laser Widget
         laserDock = Dock("Laser Control", size=(600, 500))
-        self.lasers = (bluelaser, violetlaser, uvlaser)
+        self.lasers = (greenlaser, redlaser, stedlaser)
         self.laserWidgets = LaserWidget.LaserWidget(self.lasers)
         laserDock.addWidget(self.laserWidgets)
         dockArea.addDock(laserDock)
@@ -133,6 +143,12 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         widefieldDock.addWidget(self.widefieldWidget)
         dockArea.addDock(widefieldDock, "below", focusDock)
 
+        # XY-scanner tiling widget
+        tilingDock = Dock("Tiling", size=(600, 500))
+        self.tilingWidget = tiling.TilingWidget(self.scanXY, self.focusWidget, self.imspector)
+        tilingDock.addWidget(self.tilingWidget)
+        dockArea.addDock(tilingDock, "below", widefieldDock)
+        
         self.setWindowTitle('Tempesta - SLM and Katana laser control')
         self.cwidget = QtGui.QWidget()
         self.setCentralWidget(self.cwidget)

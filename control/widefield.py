@@ -5,10 +5,12 @@ Created on Fri Sep 28 17:51:28 2018
 @author: jonatan.alvelid
 """
 
+import os
 import numpy as np
 # import time
 # import threading
 import scipy.ndimage as ndi
+import scipy.misc as scipym
 from skimage.transform import resize
 # from skimage.feature import peak_local_max
 import pyqtgraph as pg
@@ -37,10 +39,6 @@ class WidefieldWidget(QtGui.QFrame):
         self.frameTime = 1000 / self.scansPerS
         self.camOnVar = False
 
-        self.camDialogButton = QtGui.QPushButton('Camera Dialog')
-        self.camDialogButton.clicked.connect(self.webcam.show_dialog)
-        self.camOnBox = QtGui.QCheckBox('Camera on')
-
         # Widefield webcam graph widget
         self.webcamGraph = WebcamGraph()
 
@@ -51,6 +49,12 @@ class WidefieldWidget(QtGui.QFrame):
         self.timer.timeout.connect(self.processDataThread.update)
         self.timer.start(self.frameTime)
 
+        self.camDialogButton = QtGui.QPushButton('Camera Dialog')
+        self.camDialogButton.clicked.connect(self.webcam.show_dialog)
+        self.snapshotButton = QtGui.QPushButton('Take snapshot')
+        self.snapshotButton.clicked.connect(self.processDataThread.takeSnapshot)
+        self.camOnBox = QtGui.QCheckBox('Camera on')
+
         # GUI layout
         self.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Raised)
         grid = QtGui.QGridLayout()
@@ -58,6 +62,7 @@ class WidefieldWidget(QtGui.QFrame):
         grid.addWidget(self.webcamGraph, 0, 0, 4, 5)
         grid.addWidget(self.camDialogButton, 4, 2, 1, 5)
         grid.addWidget(self.camOnBox, 4, 1)
+        grid.addWidget(self.snapshotButton, 5, 2, 1, 5)
 
 #        grid.setColumnMinimumWidth(1, 100)
 #        grid.setColumnMinimumWidth(2, 40)
@@ -68,8 +73,10 @@ class WidefieldWidget(QtGui.QFrame):
     def camOnVarChange(self):
         if self.camOnVar:
             self.camOnVar = False
+            self.timer.stop()
         else:
             self.camOnVar = True
+            self.timer.start(self.frameTime)
 
     def closeEvent(self, *args, **kwargs):
         super().closeEvent(*args, **kwargs)
@@ -86,14 +93,15 @@ class ProcessDataThread(QtCore.QThread):
                    'top': None, 'bot': None,
                    'exposure_time': 10}
         # Grab camera image
-        self.image = self.webcam.grab_image()
-        self.sensorSize = np.array(self.image.shape)
+        self.webcamImage = self.webcam.grab_image()
+        self.sensorSize = np.array(self.webcamImage.shape)
+        self.snapshotwd = 'C:\\Users\\STEDred\Documents\TempestaSnapshots'
 
     def update(self):
         if self.widefieldWidget.camOnVar:
             try:
                 # then = time.time()
-                self.image = self.webcam.grab_image()
+                self.webcamImage = self.webcam.grab_image()
                 # now = time.time()
                 # print("WF: Whole grab image took: ", now-then, " seconds")
                 # print("")
@@ -102,7 +110,20 @@ class ProcessDataThread(QtCore.QThread):
             # imagearray = np.array(self.image)
             # imagearray = resize(imagearray, (256, 320))
             # imagearraygf = ndi.filters.gaussian_filter(imagearray, 3)  # Gaussian filter the image, to remove noise.
-            self.widefieldWidget.webcamGraph.update(self.image)
+            self.widefieldWidget.webcamGraph.update(self.webcamImage)
+
+    def takeSnapshot(self):
+        if self.widefieldWidget.camOnVar:
+            imagearray = np.array(self.webcamImage)
+            datetimestring = time.strftime("%Y%m%d-%H%M%S")
+            # filename = datetimestring + '.txi'  # .txi for text image
+            filenametiff = datetimestring + '.tiff'
+            # np.savetxt(filename, imagearray)
+            currwd = os.getcwd()
+            os.chdir(self.snapshotwd)
+            scipym.toimage(imagearray, cmin=0.0, cmax=..., mode='F').save(filenametiff)
+            # scipym.imsave(filenametiff, imagearray)
+            os.chdir(currwd)
 
 
 class WebcamGraph(pg.GraphicsWindow):
@@ -182,8 +203,8 @@ class WebcamGraph(pg.GraphicsWindow):
         self.view.setAspectLocked(True)  # square pixels
         self.view.addItem(self.image)
 
-    def update(self, image):
-        self.image.setImage(image)
+    def update(self, webcamImage):
+        self.image.setImage(webcamImage)
 
 
 if __name__ == '__main__':

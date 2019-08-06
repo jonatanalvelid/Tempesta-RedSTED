@@ -54,6 +54,62 @@ def topHat(sizex, sizey, r, sigma, u, v):
     return mask
 
 
+def HalfPattern(sizex, sizey, r, u, v, rotang):
+    """Creates a top hat mask with radius r. The input beam is supposed gaussain
+    with a standard deviation sigma."""
+    mask = np.zeros((sizex, sizey), dtype="float")
+    y, x = np.ogrid[-sizex//2-u:sizex//2-u, -sizey//2-v:sizey//2-v]
+    d2 = x**2 + y**2
+    theta = np.arctan2(x, y) + rotang
+    midLine = (abs(theta) < np.pi / 2)*(d2 <= r**2)
+    mask[midLine] = np.pi
+    return mask
+
+
+def QuadrantPattern(sizex, sizey, r, u, v, rotang):
+    """Creates a top hat mask with radius r. The input beam is supposed gaussain
+    with a standard deviation sigma."""
+    mask = np.zeros((sizex, sizey), dtype="float")
+    y, x = np.ogrid[-sizex//2-u:sizex//2-u, -sizey//2-v:sizey//2-v]
+    theta = np.arctan2(x, y) + rotang
+    d2 = x**2 + y**2
+    quadLine = (theta < np.pi)*(theta > np.pi / 2)*(d2<=r**2)+ (theta < 0 )*(theta > -np.pi / 2)*(d2 <= r**2)
+    mask[quadLine] = np.pi
+    return mask
+
+
+def HexPattern(sizex, sizey, r, u, v, rotang):
+    """Creates a top hat mask with radius r. The input beam is supposed gaussain
+    with a standard deviation sigma."""
+    mask = np.zeros((sizex, sizey), dtype="float")
+    y, x = np.ogrid[-sizex//2-u:sizex//2-u, -sizey//2-v:sizey//2-v]
+    theta = np.arctan2(x, y) + rotang
+    d2 = x**2 + y**2
+    hexLine = (theta < np.pi / 3)*(theta > 0)*(d2<=r**2)+ (theta > -2 * np.pi / 3)*(theta < -np.pi / 3)*(d2 <= r**2) + (theta > 2 * np.pi / 3)*(theta < np.pi)*(d2<=r**2) 
+    mask[hexLine] = np.pi
+    return mask
+
+
+def SplitBullseyePattern(sizex, sizey, r, u, v, rotang):
+    """Creates a top hat mask with radius r. The input beam is supposed gaussain
+    with a standard deviation sigma."""
+    radius_factor = 0.6
+    mask = np.zeros((sizex, sizey), dtype="float")
+    mask1 = np.zeros((sizex, sizey), dtype="float")
+    mask2 = np.zeros((sizex, sizey), dtype="float")
+    #Looking for the middle of the gaussian intensity distribution:
+    mid_radius = radius_factor * r
+    y, x = np.ogrid[-sizex//2-u:sizex//2-u, -sizey//2-v:sizey//2-v]
+    theta = np.arctan2(x, y) + rotang
+    d2 = x**2 + y**2
+    ring = (d2 <= r**2)*(d2 > mid_radius**2)
+    mask1[ring] = np.pi
+    midLine = (abs(theta) < np.pi / 2)*(d2 <= r**2)
+    mask2[midLine] = np.pi
+    mask = (mask1 + mask2) % (2 * np.pi)
+    return mask
+
+
 def aberrationsMask(sizex, sizey, r, u, v, aberrationFactors):
     """Creates a top hat mask with radius r. The input beam is supposed gaussain
     with a standard deviation sigma."""
@@ -63,13 +119,17 @@ def aberrationsMask(sizex, sizey, r, u, v, aberrationFactors):
     circularMask = np.ones((x.size, y.size))
     circularMask[d > r] = 0
 
-    fDefoc = aberrationFactors[0]
-    fSph = aberrationFactors[1]
-    fVertComa = aberrationFactors[2]
-    fHozComa = aberrationFactors[3]
-    fVertAstPar = aberrationFactors[4]
-    fOblAstPar = aberrationFactors[5]
+    fTilt = aberrationFactors[0]
+    fTip = aberrationFactors[1]
+    fDefoc = aberrationFactors[2]
+    fSph = aberrationFactors[3]
+    fVertComa = aberrationFactors[4]
+    fHozComa = aberrationFactors[5]
+    fVertAstPar = aberrationFactors[6]
+    fOblAstPar = aberrationFactors[7]
 
+    tiltMask = np.fromfunction(lambda i, j: fTilt * 2 * np.sqrt(((i - sizex // 2 - u) / r)**2 + ((j - sizey // 2 - v) / r)**2) * np.sin(np.arctan2(((j - sizey // 2 - v) / r), ((i - sizex // 2 - u) / r))), (sizex, sizey), dtype="float")
+    tipMask = np.fromfunction(lambda i, j: fTip * 2 * np.sqrt(((i - sizex // 2 - u) / r)**2 + ((j - sizey // 2 - v) / r)**2) * np.cos(np.arctan2(((j - sizey // 2 - v) / r), ((i - sizex // 2 - u) / r))), (sizex, sizey), dtype="float")
     defocusMask = np.fromfunction(lambda i, j: fDefoc * np.sqrt(3) * (2 * (((i - sizex // 2 - u) / r)**2 + ((j - sizey // 2 - v) / r)**2) - 1), (sizex, sizey), dtype="float")
     sphericalMask = np.fromfunction(lambda i, j: fSph * np.sqrt(5) * (6 * (((i - sizex // 2 - u) / r)**2 + ((j - sizey // 2 - v) / r)**2)**4 - 6 * (((i - sizex // 2 - u) / r)**2 + ((j - sizey // 2 - v) / r)**2) + 1), (sizex, sizey), dtype="float")
     verticalComaMask = np.fromfunction(lambda i, j: fVertComa * np.sqrt(8) * np.sin(np.arctan2(((j - sizey // 2 - v) / r), ((i - sizex // 2 - u) / r))) * (3 * (np.sqrt(((i - sizex // 2 - u) / r)**2 + ((j - sizey // 2 - v) / r)**2))**3 - 2 * np.sqrt(((i - sizex // 2 - u) / r)**2 + ((j - sizey // 2 - v) / r)**2)), (sizex, sizey), dtype="float")
@@ -77,7 +137,7 @@ def aberrationsMask(sizex, sizey, r, u, v, aberrationFactors):
     verticalAstigmatismMask = np.fromfunction(lambda i, j: fVertAstPar * np.sqrt(6) * np.cos(2 * np.arctan2(((j - sizey // 2 - v) / r), ((i - sizex // 2 - u) / r))) * ((np.sqrt(((i - sizex // 2 - u) / r)**2 + ((j - sizey // 2 - v) / r)**2))**2), (sizex, sizey), dtype="float")
     obliqueAstigmatismMask = np.fromfunction(lambda i, j: fOblAstPar * np.sqrt(6) * np.sin(2 * np.arctan2(((j - sizey // 2 - v) / r), ((i - sizex // 2 - u) / r))) * ((np.sqrt(((i - sizex // 2 - u) / r)**2 + ((j - sizey // 2 - v) / r)**2))**2), (sizex, sizey), dtype="float")
 
-    mask = np.multiply(circularMask, defocusMask + sphericalMask + verticalComaMask + horizontalComaMask + verticalAstigmatismMask + obliqueAstigmatismMask + math.pi)
+    mask = np.multiply(circularMask, tiltMask + tipMask + defocusMask + sphericalMask + verticalComaMask + horizontalComaMask + verticalAstigmatismMask + obliqueAstigmatismMask + math.pi)
     mask %= 2 * math.pi
 
     return mask
