@@ -149,6 +149,9 @@ class videoThread(threading.Thread):
 
     def run(self):
         self.app = wx.App()
+        # Use this one if you only have one monitor connected
+#        frame = SLMframe(monitor=1, isImageLock=self.parent.isImageLock)
+        # Use this one if you have both monitors connected
         frame = SLMframe(isImageLock=self.parent.isImageLock)
         frame.Show(True)
 

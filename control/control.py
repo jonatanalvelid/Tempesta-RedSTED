@@ -29,7 +29,8 @@ import specpy as sp
 # StartRecording called when "Rec" presset. Creates recording thread with RecWorker, recording is then
 # done in this seperate thread.
 
-datapath = u"C:\\Users\\aurelien.barbotin\Documents\Data\DefaultDataFolder"
+#datapath = u"C:\\Users\\aurelien.barbotin\Documents\Data\DefaultDataFolder"
+datapath = u"C:\\Users\\STEDred\Documents\defaultTempestaData"
 
 
 class FileWarning(QtGui.QMessageBox):
