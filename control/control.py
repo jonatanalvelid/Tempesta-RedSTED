@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# import numpy as np
 import os
 import time
 
@@ -22,12 +23,14 @@ import control.tiling as tiling
 # import control.tableWidget as tableWidget
 import control.slmWidget as slmWidget
 import control.guitools as guitools
+import specpy as sp
 
 # Widget to control image or sequence recording. Recording only possible when liveview active.
 # StartRecording called when "Rec" presset. Creates recording thread with RecWorker, recording is then
 # done in this seperate thread.
 
 #datapath = u"C:\\Users\\aurelien.barbotin\Documents\Data\DefaultDataFolder"
+datapath = u"C:\\Users\\STEDred\Documents\defaultTempestaData"
 
 
 class FileWarning(QtGui.QMessageBox):
@@ -38,8 +41,6 @@ class FileWarning(QtGui.QMessageBox):
 class TempestaSLMKatanaGUI(QtGui.QMainWindow):
     """Main GUI class. This class calls other modules in the control folder
 
-    :param Laser bluelaser: object controlling one laser
-    :param Laser violetlaser: object controlling one laser
     :param Laser greenlaser: object controlling one laser
     :param Laser redlaser: object controlling one laser
     :param Laser stedlaser: object controlling one laser
