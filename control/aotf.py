@@ -43,6 +43,10 @@ class AAAOTF(SerialDriver):
         super().initialize()
         
         self.intensity_max = 1023  # maximum power setting for the AOTF
+        
+        self.query('L0' + 'I1' + 'O1')  # switch on the blanking of all the channels
+        self.query('L1' + 'I1')  # switch channel 1 to internal control
+        self.query('L2' + 'I1')  # switch channel 2 to internal control
 
     # POWER ADJUSTMENT
 

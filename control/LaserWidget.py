@@ -19,11 +19,11 @@ class LaserWidget(QtGui.QFrame):
 #        self.mW = Q_(1, 'mW')
 #        self.uW = Q_(1, 'uW')
 
-        self.greenControl = AOTFControl(self.aotf, '561 nm Aberrior',
+        self.greenControl = AOTFControl(self.aotf, '561 nm Aberrior, P=max',
                                           color=(198, 255, 0), tickInterval=5,
                                           singleStep=0.1, channel=1,
                                           modulable=False)
-        self.redControl = AOTFControl(self.aotf, '640 nm PicoQuant',
+        self.redControl = AOTFControl(self.aotf, '640 nm PicoQuant, P=3:90',
                                           color=(255, 33, 0), tickInterval=5,
                                           singleStep=0.1, channel=2,
                                           modulable=False)
@@ -74,7 +74,7 @@ class LaserControl(QtGui.QFrame):
         self.name = QtGui.QLabel(name)
         self.name.setTextFormat(QtCore.Qt.RichText)
         self.name.setAlignment(QtCore.Qt.AlignCenter)
-        self.powerIndicator = QtGui.QLineEdit('{:~}'.format(self.laser.power))
+        self.powerIndicator = QtGui.QLineEdit('Max: ' + '{:~}'.format(self.laser.power))
         self.powerIndicator.setReadOnly(True)
         self.powerIndicator.setFixedWidth(100)
         self.setPointEdit = QtGui.QLineEdit(str(round(self.laser.power_sp.magnitude, 3)))
@@ -173,7 +173,10 @@ class AOTFControl(QtGui.QFrame):
         self.name = QtGui.QLabel(name)
         self.name.setTextFormat(QtCore.Qt.RichText)
         self.name.setAlignment(QtCore.Qt.AlignCenter)
-        self.powerIndicator = QtGui.QLineEdit('15 uW')
+        if channel==1:
+            self.powerIndicator = QtGui.QLineEdit('Max: 21 uW')
+        elif channel==2:
+            self.powerIndicator = QtGui.QLineEdit('Max: 124 uW')
         self.powerIndicator.setReadOnly(True)
         self.powerIndicator.setFixedWidth(100)
         self.setPointEdit = QtGui.QLineEdit(str(0))
