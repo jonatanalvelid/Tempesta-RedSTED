@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-#import time
+# import time
 from PyQt4 import QtCore
 from lantz import Q_
 from pyqtgraph.Qt import QtGui
 import control.instruments as instruments
+import math
 
 
 class LaserWidget(QtGui.QFrame):
@@ -235,33 +236,28 @@ class AOTFControl(QtGui.QFrame):
     def enableLaser(self):
         """Turns on the laser, sets its power to the value specified by the textbox."""
         self.aotf.channelOn(self.channel, 1)
-#        print('1')
         self.aotf.power(self.channel, float(self.setPointEdit.text()))
-#        print('2')        
         
     def disableLaser(self):
         """Turns off the laser."""
-#        print('3')
         self.aotf.channelOn(self.channel, 0)
-#        print('4')
 
     def changeSlider(self, value):
         """called when the slider is moved, sets the power of the laser to value"""
-#        print('5')
-#        print(self.slider.value())
         self.aotf.power(self.channel, self.slider.value())
-#        print('6')
         self.setPointEdit.setText(str(round(self.slider.value())))
-#        print('7')
 
     def changeEdit(self):
         """called when the user manually changes the intensity value of the laser.
         Sets the laser power to the corresponding value"""
-#        print('8')
         self.aotf.power(self.channel, int(self.setPointEdit.text()))
-#        print('9')
         self.slider.setValue(float(self.setPointEdit.text()))
-#        print('10')
+        
+    def getOutPower(self, p_setting):
+        """Get the output power in uW when given a AOTF power setting value in
+        [0, 1023], valid for [0, ~920] power settings"""
+        p_out = 0.08117 * math.exp(0.004165 * p_setting) + 6.563*10**(-5) * math.exp(0.01466 * p_setting)
+        return float(p_out)
 
     def closeEvent(self, *args, **kwargs):
         super().closeEvent(*args, **kwargs)
