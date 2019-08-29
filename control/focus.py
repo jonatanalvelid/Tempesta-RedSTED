@@ -22,7 +22,7 @@ import control.instruments as instruments
 
 class FocusWidget(QtGui.QFrame):
 
-    def __init__(self, scanZ, webcam, main=None, *args, **kwargs):
+    def __init__(self, scanZ, webcam, imspector, main=None, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.setMinimumSize(2, 350)  # Set the minimum size of the widget
@@ -30,6 +30,7 @@ class FocusWidget(QtGui.QFrame):
         self.main = main
         self.z = scanZ
         self.webcam = webcam
+        self.imspector = imspector
         self.setPoint = 0
         self.focuspoints = np.zeros(10)
         self.calibrationResult = [0, 0]
@@ -49,6 +50,7 @@ class FocusWidget(QtGui.QFrame):
         self.averageDiff = 10
         self.dataPoints = np.zeros(7)
         self.noStepVar = True
+        self.countrows = 0
 
         self.V = Q_(1, 'V')
         self.um = Q_(1, 'um')
@@ -158,6 +160,14 @@ class FocusWidget(QtGui.QFrame):
         self.zStackBox.stateChanged.connect(self.zStackVarChange)
         self.twoFociBox.stateChanged.connect(self.twoFociVarChange)
 
+    def __call__(self):
+        self.countrows = self.countrows + 1
+        if self.countrows == self.rowsperframe:
+            self.countrows = 0
+            self.unlockFocus()
+            self.ZStep()
+            # slice is finished, move to next plane in a good way!
+            
     def movePZT(self):
         self.z.move_absZ(float(self.positionEdit.text()) * self.um)
 
@@ -169,15 +179,34 @@ class FocusWidget(QtGui.QFrame):
         else:
             self.unlockFocus()
             self.lockButton.setText('Lock')
-            
-    def mockFocusPress(self):
-        print('Focus is locked! (sure, you thought so, no?)')
 
     def zStackVarChange(self):
         if self.zStackVar:
+            # Do all the things needed to be done when you finish end a z-stack
             self.zStackVar = False
+            self.imspector.disconnect_end(self,1)
         else:
+            # Do all the things needed to be done when you start end a z-stack
             self.zStackVar = True
+            self.countrows = 0
+            
+            self.immeasurement = self.imspector.active_measurement()
+            self.measurementparams = self.immeasurement.parameters('')
+
+            if self.measurementparams['Measurement']['ThdAxis'] == 'NiDAQ6353 DACs::Z':
+                print('One-color z-stack in progress!')
+                self.imspector.connect_end(self,1)
+                self.rowsperframe = self.measurementparams['NiDAQ6353'][':YRes']
+                print(self.rowsperframe)
+            elif self.measurementparams['Measurement']['FthAxis'] == 'NiDAQ6353 DACs::Z':
+                print('Two-color z-stack in progress!')
+                self.imspector.connect_end(self,1)
+                # Use double the number of rows, as we are doing two-color imaging, and as such want to take the next tile when we have scanned 2*the whole frame
+                self.rowsperframe = 2*self.measurementparams['NiDAQ6353'][':YRes']
+                print(self.rowsperframe)
+            else:
+                print('Axises in Imspector are not properly set-up for a z-stack. Double check you settings.')
+                return
 
     def twoFociVarChange(self):
         if self.twoFociVar:
@@ -200,7 +229,7 @@ class FocusWidget(QtGui.QFrame):
             self.locked = True
             self.stepDistLow = 0.001 * np.float(self.zStepFromEdit.text())
             self.stepDistHigh = 0.001 * np.float(self.zStepToEdit.text())
-            print(self.stepDistance)
+            #print(self.stepDistance)
             print('%.2f s' % self.zsteptime)
             print(' ')
 
@@ -248,16 +277,16 @@ class FocusWidget(QtGui.QFrame):
         if abs(self.distance) > 5 * self.um or abs(out) > 3:
             print('Safety unlocking!')
             self.unlockFocus()
-        elif self.zStackVar and self.zstepupdate > 15:
-            if self.stepDistance > self.stepDistLow * self.um and self.stepDistance < self.stepDistHigh * self.um:
-                self.unlockFocus()
-                self.dataPoints = np.zeros(5)
-                self.averageDiff = 10
-                self.aboutToLock = True
-                self.t0 = time.time()
-                self.zsteptime = self.t0-self.t1
-                self.t1 = self.t0
-                self.noStepVar = False
+#        elif self.zStackVar and self.zstepupdate > 15:
+#            if self.stepDistance > self.stepDistLow * self.um and self.stepDistance < self.stepDistHigh * self.um:
+#                self.unlockFocus()
+#                self.dataPoints = np.zeros(5)
+#                self.averageDiff = 10
+#                self.aboutToLock = True
+#                self.t0 = time.time()
+#                self.zsteptime = self.t0-self.t1
+#                self.t1 = self.t0
+#                self.noStepVar = False
         if self.noStepVar and abs(out) > 0.002:
             self.zstepupdate = self.zstepupdate + 1
             self.z.move_relZ(out * self.um)
@@ -286,6 +315,10 @@ class FocusWidget(QtGui.QFrame):
         self.dataPoints = np.zeros(5)
         self.averageDiff = 10
         self.aboutToLock = True
+        self.t0 = time.time()
+        self.zsteptime = self.t0-self.t1
+        self.t1 = self.t0
+        self.noStepVar = False
             
     def getFocusPosition(self):
         # Return the current focus locked spot position
