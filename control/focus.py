@@ -39,7 +39,7 @@ class FocusWidget(QtGui.QFrame):
         self.twoFociVar = False
         self.n = 1
         self.max_dev = 0
-        self.scansPerS = 15
+        self.scansPerS = 10
         self.focusTime = 1000 / self.scansPerS
         self.zstepupdate = 0
         self.t0 = 0
@@ -280,6 +280,13 @@ class FocusWidget(QtGui.QFrame):
         else:
             self.lockFocusSetPos(newFocusPos)
 
+    def ZStep(self, newFocusPos=False):
+        # Call this function whenever there is a z-stack step about to be taken. Lock the focus in a new position.
+        # Do it at a sensed new position, as a z-step. 
+        self.dataPoints = np.zeros(5)
+        self.averageDiff = 10
+        self.aboutToLock = True
+            
     def getFocusPosition(self):
         # Return the current focus locked spot position
         return self.setPoint
@@ -388,8 +395,11 @@ class ProcessDataThread(QtCore.QThread):
             pass
         imagearray = self.image
 #        imagearray = imagearray[0:720,200:1310]
-        imagearray = imagearray[300:450,0:1310]
-        imagearraygf = ndi.filters.gaussian_filter(imagearray,5)     # Gaussian filter the image, to remove noise and so on, to get a better center estimate
+#        imagearray = imagearray[300:450,0:1310]
+        imagearray = imagearray[0:1024,730:830]
+        imagearray = np.swapaxes(imagearray,0,1)      # Swap matrix axes, after having turned the camera 90deg
+        # imagearraygf = imagearray
+        imagearraygf = ndi.filters.gaussian_filter(imagearray,7)     # Gaussian filter the image, to remove noise and so on, to get a better center estimate
 
         if self.focusWidget.twoFociVar:
             allmaxcoords = peak_local_max(imagearraygf, min_distance=60)
@@ -418,11 +428,13 @@ class ProcessDataThread(QtCore.QThread):
         else:
             centercoords = np.where(imagearraygf == np.array(imagearraygf.max()))
             centercoords2 = np.array([centercoords[0][0],centercoords[1][0]])
-
-        xlow = max(0,(centercoords2[0]-75))
-        xhigh = min(1024,(centercoords2[0]+75))
-        ylow = max(0,(centercoords2[1]-75))
-        yhigh = min(1280,(centercoords2[1]+75))
+            
+        subsizey = 50
+        subsizex = 50
+        xlow = max(0,(centercoords2[0]-subsizex))
+        xhigh = min(1024,(centercoords2[0]+subsizex))
+        ylow = max(0,(centercoords2[1]-subsizey))
+        yhigh = min(1280,(centercoords2[1]+subsizey))
         #print(xlow)
         #print(xhigh)
         #print(ylow)
@@ -437,16 +449,36 @@ class ProcessDataThread(QtCore.QThread):
         #print(centercoords2[1])
         self.massCenter = np.array(ndi.measurements.center_of_mass(imagearraygfsub))
         #self.massCenter2 = np.array(ndi.measurements.center_of_mass(imagearraygfsubtest))
-        #print(self.massCenter[1])
-        #print('')
-        self.massCenter[0] = self.massCenter[0] + centercoords2[0] - 75 - self.sensorSize[0] / 2     #add the information about where the center of the subarray is
-        self.massCenter[1] = self.massCenter[1] + centercoords2[1] - 75 - self.sensorSize[1] / 2     #add the information about where the center of the subarray is
-        #self.massCenter2[0] = self.massCenter2[0] - self.sensorSize[0] / 2     #add the information about where the center of the subarray is
-        #self.massCenter2[1] = self.massCenter2[1] - self.sensorSize[1] / 2     #add the information about where the center of the subarray is
-        #print(self.massCenter[1])
+        # self.massCenterGlobal[0] = self.massCenter[0] #+ centercoords2[0] #- subsizex - self.sensorSize[0] / 2     #add the information about where the center of the subarray is
+        self.massCenterGlobal = self.massCenter[1] + centercoords2[1] #- subsizey - self.sensorSize[1] / 2     #add the information about where the center of the subarray is
+#        print(self.massCenter[1])
+#        print(self.massCenterGlobal)
+#        print(centercoords2[1])
+#        print('')
         #print(self.massCenter2[1])
         #print('')
-        self.focusSignal = self.massCenter[1]
+        self.focusSignal = self.massCenterGlobal
+        
+#        # Try to add-project (or max intensity maybe is better?) the matrix
+#        # onto the yaxis, and see if the focus lock becomes more robust
+##        imagearraygfsub = imagearraygf[xlow:xhigh,ylow:yhigh]
+#        imagearraygfsub = imagearraygf
+#        self.image = imagearraygf
+#        imagearraygfsubproj = imagearraygfsub.sum(axis=0)
+#        print(imagearraygfsubproj.shape)
+#        #print(centercoords2[1])
+#        self.massCenter = np.array(ndi.measurements.center_of_mass(imagearraygfsubproj))
+#        #self.massCenter2 = np.array(ndi.measurements.center_of_mass(imagearraygfsubtest))
+##        print('hey')
+#        self.massCenterGlobal = 0
+#        self.massCenterGlobal = self.massCenter #+ centercoords2[1] #- subsizey - self.sensorSize[1] / 2     #add the information about where the center of the subarray is
+#        print(self.massCenter)
+#        print(self.massCenterGlobal)
+#        print(centercoords2[1])
+#        print('')
+#        #print(self.massCenter2[1])
+#        #print('')
+#        self.focusSignal = self.massCenterGlobal
 
 
 class FocusLockGraph(pg.GraphicsWindow):
