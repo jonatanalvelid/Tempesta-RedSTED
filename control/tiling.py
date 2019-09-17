@@ -67,6 +67,11 @@ class TilingWidget(QtGui.QFrame):
         self.mockFocusButton = QtGui.QPushButton('Mock focus')
         self.mockFocusButton.clicked.connect(self.focusWidget.tilingStep)
 
+        # Add status bar, a non-editable text, that tells the current state
+        self.statusLabel = QtGui.QLabel('Status:')
+        self.statusText = QtGui.QLineEdit('Click "Initialize tiling" to start tiling acquisition')
+        self.statusText.setReadOnly(True)
+
         # GUI layout
         self.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Raised)
         grid = QtGui.QGridLayout()
@@ -96,14 +101,18 @@ class TilingWidget(QtGui.QFrame):
         grid.addWidget(self.tilingSavedFociCheckBox, 5, 4)
         grid.addWidget(self.automaticTilingCheckBox, 5, 2)
 
+        grid.addWidget(self.statusLabel, 6, 0, 1, 1)
+        grid.addWidget(self.statusText, 6, 1, 1, 4)
+
         # grid.addWidget(self.moveCenterButton, 4, 1)
 
     def __call__(self):
         self.countrows = self.countrows + 1
         if self.countrows == self.rowsperframe:
-            print('Next tile!')
+#            print('Next tile!')
             self.countrows = 0
             self.nexttile()
+            self.statusText.setText('Tiling in progress, tile %d of %d' % (self.tilenumber+1, self.numberoftiles))
             # frame is finished, move to next tile in a good way!
 
     def tilingFocusCheckVarChange(self):
@@ -123,7 +132,7 @@ class TilingWidget(QtGui.QFrame):
             self.automaticTilingVar = False
         else:
             self.automaticTilingVar = True
-            
+
     def movestage(self):
         #self.xystage.move_rel(float(self.movelengthXEdit.text()), float(self.movelengthYEdit.text()))
         self.xystage.move_relX(float(self.movelengthXEdit.text()))
@@ -144,6 +153,7 @@ class TilingWidget(QtGui.QFrame):
             # Create a new tilefoci-array if this is a new focus check tiling
             if self.tilingFocusCheckVar:
                 self.tilefoci = np.zeros(self.numberoftiles)
+                self.statusText.setText('Setting tiling foci, tile %d of %d' % (self.tilenumber+1, self.numberoftiles))
             else:
                 print(self.tilefoci)
             # If you want to do automatic tiling, check the number of rows in the active imspector measurement stack window
@@ -156,22 +166,26 @@ class TilingWidget(QtGui.QFrame):
                 # Also check if the size of the tiles equals the size of the measurement in Imepsctor
                 if self.measurementparams['Sync']['0Res'] == self.numberoftiles and self.measurementparams['NiDAQ6353'][':YLen'] == float(self.tilesSizeEdit.text()) and round(self.measurementparams['NiDAQ6353'][':XLen']) == float(self.tilesSizeEdit.text()):
                     if self.measurementparams['Measurement']['ThdAxis'] == 'Sync 0':
-                        print('One-color tiling in progress!')
+#                        print('One-color tiling in progress!')
+                        self.statusText.setText('One-color tiling started, tile %d of %d' % (self.tilenumber+1, self.numberoftiles))
                         self.imspector.connect_end(self,1)
                         self.rowsperframe = self.measurementparams['NiDAQ6353'][':YRes']
-                        print(self.rowsperframe)
+#                        print(self.rowsperframe)
                     elif self.measurementparams['Measurement']['SecAxis'] == 'NiDAQ6353 DACs::4' and self.measurementparams['Measurement']['FthAxis'] == 'Sync 0':
-                        print('Two-color tiling in progress!')
+#                        print('Two-color tiling in progress!')
+                        self.statusText.setText('Two-color tiling started, tile %d of %d' % (1, self.numberoftiles))
                         self.imspector.connect_end(self,1)
                         # Use double the number of rows, as we are doing two-color imaging, and as such want to take the next tile when we have scanned 2*the whole frame
                         self.rowsperframe = 2*self.measurementparams['NiDAQ6353'][':YRes']
-                        print(self.rowsperframe)
+#                        print(self.rowsperframe)
                     else:
-                        print('Axises in Imspector are not properly set-up for a tiling. Double check you settings.')
+#                        print('Axises in Imspector are not properly set-up for a tiling. Double check your settings.')
+                        self.statusText.setText('Axises in Imspector are not properly set-up for a tiling. Double check your settings.')
                         self.endtiling()
                         return
                 else:
-                    print('Number of tiles and number of frames in Imspector or size of tile and size of frame in Imspector measurement do not agree!')
+#                    print('Number of tiles and number of frames in Imspector or size of tile and size of frame in Imspector measurement do not agree!')
+                    self.statusText.setText('Number of tiles and number of frames in Imspector or size of tile and size of frame in Imspector measurement do not agree. Double check your settings.')
                     self.endtiling()
                     return
             self.tilesxsteps = np.ones((int(self.tilesYEdit.text()), int(self.tilesXEdit.text())-1))
@@ -193,7 +207,7 @@ class TilingWidget(QtGui.QFrame):
                 self.focusWidget.tilingStep(self.tilefoci[self.tilenumber])
         else:
             self.endtiling()
-            
+
     def nexttile(self):
         if self.tilingActiveVar:
             # print(self.tilesxsteps[self.tilenumber])
@@ -210,8 +224,12 @@ class TilingWidget(QtGui.QFrame):
             # Check if the last step has been taken
             if self.tilenumber == self.numberoftiles-1:
                 # If so, finish the tiling
-                print('Tiling is done!')
+#                print('Tiling is done!')
                 self.endtiling()
+                if self.tilingFocusCheckVar:
+                    self.statusText.setText('Setting tiling foci done, start tiling by checking "Use saved focal planes" and clicking "Initialize tiling".')
+                else:
+                    self.statusText.setText('Tiling is done!')
             else:
                 # If not, change the current tile number to the next tile,
                 # and call the tilingStep function in the focus widget, to
@@ -221,13 +239,15 @@ class TilingWidget(QtGui.QFrame):
                     self.focusWidget.tilingStep(self.tilefoci[self.tilenumber])
                 else:
                     self.focusWidget.tilingStep()
-                    
+                if self.tilingFocusCheckVar:
+                    self.statusText.setText('Setting tiling foci, tile %d of %d' % (self.tilenumber+1, self.numberoftiles))
+
     def endtiling(self):
         # Do all the things needed to be done when you finish or end a tiling
         self.tilingActiveVar = False
         self.initTilingButton.setText('Initialize tiling')
         self.tilenumber = 0
-        self.imspector.disconnect_end(self,1)
+        self.imspector.disconnect_end(self, 1)
 
     def closeEvent(self, *args, **kwargs):
         super().closeEvent(*args, **kwargs)
