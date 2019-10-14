@@ -12,4 +12,5 @@ Jonatan Alvelid
 Do not hesitate to contact me (@jonatanalvelid) for any questions regarding the code, for your own implementation or curiosity. 
 
 Used in the following publications:
+
 Alvelid et al., Stable STED imaging of Extended Sample Regions, J. Phys. D: Appl. Phys. (2019), in press https://doi.org/10.1088/1361-6463/ab4c13
