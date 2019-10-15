@@ -29,9 +29,11 @@ def main():
         print(aotf.idn)
         # sp.Imspector() as imspector:
         # print(imspector.version())
-
+        print('hej')
         webcamFocusLock = instruments.CameraTIS(0, 0, 0, 0)
+        print('shop')
         webcamWidefield = instruments.CameraTIS(1, 25, 17, 725)
+        print('hopp')
 
         win = control.TempestaSLMKatanaGUI(katanalaser, slm, scanZ, scanXY,
                                            webcamFocusLock, webcamWidefield,

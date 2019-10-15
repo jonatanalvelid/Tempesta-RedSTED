@@ -134,7 +134,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
 
         # Focus lock widget
         focusDock = Dock("Focus lock", size=(600, 500))
-        self.focusWidget = focus.FocusWidget(self.scanZ, webcamFocusLock)
+        self.focusWidget = focus.FocusWidget(self.scanZ, webcamFocusLock, self.imspector)
         focusDock.addWidget(self.focusWidget)
         dockArea.addDock(focusDock, "above", laserDock)
 
