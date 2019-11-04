@@ -34,6 +34,9 @@ class MockLaser(Driver):
         self.enabled = False
         self.power_sp = 0 * self.mW
 
+    def close(self):
+        pass
+
     @property
     def idn(self):
         return 'Simulated laser'
@@ -196,12 +199,6 @@ class MockKatanaLaser(object):
     def getCurrent(self):
         return '1A'
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args, **kwargs):
-        self.close()
-
     def close(self):
         self.enabled = False
 
@@ -212,14 +209,14 @@ class MockSLM(object):
         super(MockSLM).__init__()
         print('Simulated SLM')
 
-        def getSize():
-            return((792, 600))
+    def getSize():
+        return((792, 600))
 
-        def updateArray(mask):
-            pass
+    def updateArray(mask):
+        pass
 
-        def close(self):
-            pass
+    def close(self):
+        pass
 
     def start(self):
         pass
@@ -240,6 +237,9 @@ class MockLeicaZDrive(object):
     def __init__(self, SerialDriver=0):
         super().__init__()
         print('Simulated Leica Z-drive')
+
+    def close(self):
+        pass
 
     @Feat()
     def absZ(self):
@@ -268,6 +268,39 @@ class MockPCZPiezo(object):
         super().__init__()
         print('Simulated PiezoConcept Z-piezo')
 
+    def close(self):
+        pass
+
+    @Feat()
+    def absZ(self):
+        """ Absolute Z position. """
+        pass
+
+    @absZ.setter
+    def absZ(self, value):
+        """ Absolute Z position movement. """
+        pass
+
+    @Feat()
+    def relZ(self):
+        """ Absolute Z position. """
+        pass
+
+    @relZ.setter
+    def relZ(self, value):
+        """ Relative Z position movement. """
+        pass
+
+
+class MockMHXYStage(object):
+
+    def __init__(self, SerialDriver=0):
+        super().__init__()
+        print('Simulated PiezoConcept Z-piezo')
+
+    def close(self):
+        pass
+
     @Feat()
     def absZ(self):
         """ Absolute Z position. """
@@ -294,6 +327,9 @@ class MockAAAOTF(object):
     def __init__(self, SerialDriver=0):
         super().__init__()
         print('Simulated AA AOTF')
+
+    def close(self):
+        pass
 
     # POWER ADJUSTMENT
 
@@ -342,6 +378,9 @@ class MockWebcam(object):
     def __init__(self):
         super().__init__()
         print('Simulated Webcam')
+
+    def close(self):
+        pass
 
     def start(self):
         pass
@@ -608,3 +647,7 @@ class MockHamamatsu(Driver):
     #
     def shutdown(self):
         pass
+
+    def close(self):
+        pass
+    

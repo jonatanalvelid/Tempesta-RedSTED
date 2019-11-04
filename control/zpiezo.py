@@ -115,8 +115,8 @@ class PCZPiezo(SerialDriver):
         interface to the nanopositioner, in ms. """
         self.query('STIME ' + str(int(value)) + 'm')
 
-
-
+    def close(self):
+        pass
 
 
 if __name__ == '__main__':

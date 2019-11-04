@@ -14,6 +14,7 @@ import control.mockers as mockers
 # from lantz.drivers.legacy.serial import SerialDriver
 # from lantz import Action, Feat
 from control.SLM import slmpy
+import serial
 
 
 class Laser(object):
@@ -51,7 +52,6 @@ class OneFiveLaser(object):
         self.mW = Q_(1, 'mW')
 
         try:
-            import serial
             self.serial_port = serial.Serial(
                  port=port,
                  baudrate=38400,
@@ -65,8 +65,9 @@ class OneFiveLaser(object):
             self.power_setpoint = 0
             self.power_sp = 0*self.mW
             self.setTriggerSource(self.triggerMode)
-        except serial.SerialException or serial.SerialTimeoutException:
-            print("No Katana available.")
+#        except serial.SerialException or serial.SerialTimeoutException:
+        except:
+            print('Mock OneFiveLaser loaded')
             self = mockers.MockKatanaLaser()
 
     @property
@@ -259,6 +260,7 @@ class SLM(object):
         try:
             self.slm = slmpy.SLMdisplay()
         except:
+            print("Mock SLM loaded")
             self.slm = mockers.MockSLM()
 
     def __enter__(self, *args, **kwargs):
@@ -359,8 +361,14 @@ class AOTF(object):
             aotf.initialize()
             return aotf
         except:
+            print('Mock AOTF loaded')
             return mockers.MockAAAOTF()
 
+    def __enter__(self, *args, **kwargs):
+        return self.aotf
+
+    def __exit__(self, *args, **kwargs):
+        self.aotf.close()
 
 class ScanZ(object):
     def __new__(cls, *args):
@@ -370,16 +378,51 @@ class ScanZ(object):
             scan.initialize()
             return scan
         except:
+            print('Mock ScanZ loaded')
             return mockers.MockPCZPiezo()
+            
+#    def __init__(self, *args):
+#        try:
+#            from control.zpiezo import PCZPiezo
+#            self.scan = PCZPiezo(*args)
+#            self.scan.initialize()
+#            return self.scan
+#        except:
+#            print('Mock ScanZ loaded')
+#            return mockers.MockPCZPiezo()
+
+    def __enter__(self, *args, **kwargs):
+        return self.scan
+
+    def __exit__(self, *args, **kwargs):
+        self.scan.close()
 
 
 class XYStage(object):
+    # new instead of init, since we want an instsance of the class to be returned
     def __new__(cls, *args):
-
         try:
             from control.xystage import MHXYStage
             xyscan = MHXYStage(*args)
             xyscan.initialize()
             return xyscan
         except:
+            print('Mock XYStage loaded')
             return mockers.MockMHXYStage()
+            
+#    def __init__(self, *args):
+#        try:
+#            from control.xystage import MHXYStage
+#            self.xyscan = MHXYStage(*args)
+#            self.xyscan.initialize()
+#            return self.xyscan
+#        except:
+#            print('Mock XYStage loaded')
+#            return mockers.MockMHXYStage()
+
+
+    def __enter__(self, *args, **kwargs):
+        return self.xyscan
+
+    def __exit__(self, *args, **kwargs):
+        self.xyscan.close()
