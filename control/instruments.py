@@ -65,9 +65,9 @@ class OneFiveLaser(object):
             self.power_setpoint = 0
             self.power_sp = 0*self.mW
             self.setTriggerSource(self.triggerMode)
-        except:
-            print("Channel Busy")
-            self = mockers.MockLaser()
+        except serial.SerialException or serial.SerialTimeoutException:
+            print("No Katana available.")
+            self = mockers.MockKatanaLaser()
 
     @property
     def idn(self):
