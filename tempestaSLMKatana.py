@@ -17,26 +17,32 @@ def main():
 #TO DO: create an instruments.Camera(hamamatsu) or something similar
 
 #    with instruments.Camera('hamamatsu.hamamatsu_camera.HamamatsuCameraMR') as orcaflash, \
-    with instruments.OneFiveLaser(intensity_max=30) as katanalaser, \
-         instruments.SLM() as slm, \
-         instruments.ScanZ('COM19') as scanZ, \
-         instruments.XYStage('COM20') as scanXY, \
-         instruments.AOTF('COM18') as aotf:
+#    with instruments.OneFiveLaser(intensity_max=30) as katanalaser, \
+#         instruments.SLM() as slm, \
+#         instruments.ScanZ('COM19') as scanZ, \
+#         instruments.XYStage('COM20') as scanXY, \
+#         instruments.AOTF('COM18') as aotf:
 
-        print(katanalaser.idn)
-        print(scanZ.idn)
-        print(scanXY.idn)
-        print(aotf.idn)
-        # sp.Imspector() as imspector:
-        # print(imspector.version())
-        webcamFocusLock = instruments.CameraTIS(0, 0, 0, 0)
-        webcamWidefield = instruments.CameraTIS(1, 25, 17, 725)
+    katanalaser = instruments.OneFiveLaser(intensity_max=30)
+    slm = instruments.SLM()
+    scanZ = instruments.ScanZ('COM19')
+    scanXY = instruments.XYStage('COM20')
+    aotf = instruments.AOTF('COM18')
 
-        win = control.TempestaSLMKatanaGUI(katanalaser, slm, scanZ, scanXY,
-                                           webcamFocusLock, webcamWidefield,
-                                           aotf)
-        win.show()
-        app.exec_()
+    print(katanalaser.idn)
+    print(scanZ.idn)
+    print(scanXY.idn)
+    print(aotf.idn)
+    # sp.Imspector() as imspector:
+    # print(imspector.version())
+    webcamFocusLock = instruments.CameraTIS(0, 0, 0, 0)
+    webcamWidefield = instruments.CameraTIS(1, 25, 17, 725)
+
+    win = control.TempestaSLMKatanaGUI(katanalaser, slm, scanZ, scanXY,
+                                       webcamFocusLock, webcamWidefield,
+                                       aotf)
+    win.show()
+    app.exec_()
 
 def analysisApp():
 

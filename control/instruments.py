@@ -50,8 +50,11 @@ class OneFiveLaser(object):
         self.triggerMode = 0        # Trigger=TTL input
         self.enabled_state = False    # Laser initially off
         self.mW = Q_(1, 'mW')
+        self.power_setpoint = 0
+        self.power_sp = 0*self.mW
 
         try:
+            print('OneFiveLaser 1')
             self.serial_port = serial.Serial(
                  port=port,
                  baudrate=38400,
@@ -59,12 +62,12 @@ class OneFiveLaser(object):
                  bytesize=serial.EIGHTBITS
                  )
 #            self.getInfo()
+            print('OneFiveLaser 2')
             self.setPowerSetting()
 #            self.mode=self.getMode()
             self.setPowerSetting(self.power_setting)
-            self.power_setpoint = 0
-            self.power_sp = 0*self.mW
             self.setTriggerSource(self.triggerMode)
+            print('OneFiveLaser 3')
 #        except serial.SerialException or serial.SerialTimeoutException:
         except:
             print('Mock OneFiveLaser loaded')
@@ -248,8 +251,9 @@ class OneFiveLaser(object):
         self.close()
 
     def close(self):
-        self.enabled = False
-        self.serial_port.close()
+        pass
+#        self.enabled = False
+#        self.serial_port.close()
 
 
 class SLM(object):

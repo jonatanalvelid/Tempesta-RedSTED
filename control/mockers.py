@@ -93,7 +93,7 @@ class MockKatanaLaser(object):
 
     @property
     def idn(self):
-        return 'OneFive 775nm'
+        return 'OneFive 775nm mock'
 
     @property
     def status(self):
@@ -200,7 +200,7 @@ class MockKatanaLaser(object):
         return '1A'
 
     def close(self):
-        self.enabled = False
+        pass
 
 
 class MockSLM(object):
@@ -209,6 +209,10 @@ class MockSLM(object):
         super(MockSLM).__init__()
         print('Simulated SLM')
 
+    @property
+    def idn(self):
+        return 'SLM mock'
+        
     def getSize():
         return((792, 600))
 
@@ -268,6 +272,10 @@ class MockPCZPiezo(object):
         super().__init__()
         print('Simulated PiezoConcept Z-piezo')
 
+    @property
+    def idn(self):
+        return 'PC Z-piezo mock'
+        
     def close(self):
         pass
 
@@ -296,8 +304,12 @@ class MockMHXYStage(object):
 
     def __init__(self, SerialDriver=0):
         super().__init__()
-        print('Simulated PiezoConcept Z-piezo')
+        print('Simulated Marzhauser Z-piezo')
 
+    @property
+    def idn(self):
+        return 'Marzhauser XY-stage mock'
+        
     def close(self):
         pass
 
@@ -328,6 +340,10 @@ class MockAAAOTF(object):
         super().__init__()
         print('Simulated AA AOTF')
 
+    @property
+    def idn(self):
+        return 'AA AOTF mock'
+        
     def close(self):
         pass
 
