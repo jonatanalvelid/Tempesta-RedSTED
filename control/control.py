@@ -53,7 +53,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
     liveviewStarts = QtCore.pyqtSignal()
     liveviewEnds = QtCore.pyqtSignal()
 
-    def __init__(self, stedlaser, slm, scanZ, scanXY, webcamFocusLock,
+    def __init__(self, slm, scanZ, scanXY, webcamFocusLock,
                  webcamWidefield, aotf, *args, **kwargs):
                      
         super().__init__(*args, **kwargs)
@@ -121,8 +121,8 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         # Laser Widget
         laserDock = Dock("Laser Control", size=(600, 500))
         #self.lasers = (greenlaser, redlaser, stedlaser)
-        self.lasers = stedlaser
-        self.laserWidgets = LaserWidget.LaserWidget(self.lasers, self.aotf)
+#        self.lasers = stedlaser
+        self.laserWidgets = LaserWidget.LaserWidget(self.aotf)
         laserDock.addWidget(self.laserWidgets)
         dockArea.addDock(laserDock)
 

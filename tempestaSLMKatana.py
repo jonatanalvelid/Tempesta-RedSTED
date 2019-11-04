@@ -17,25 +17,21 @@ def main():
 #TO DO: create an instruments.Camera(hamamatsu) or something similar
 
 #    with instruments.Camera('hamamatsu.hamamatsu_camera.HamamatsuCameraMR') as orcaflash, \
-    with instruments.OneFiveLaser(intensity_max=30) as katanalaser, \
-         instruments.SLM() as slm, \
+    with instruments.SLM() as slm, \
          instruments.ScanZ('COM19') as scanZ, \
          instruments.XYStage('COM20') as scanXY, \
          instruments.AOTF('COM18') as aotf:
 
-        print(katanalaser.idn)
+#        print(katanalaser.idn)
         print(scanZ.idn)
         print(scanXY.idn)
         print(aotf.idn)
         # sp.Imspector() as imspector:
         # print(imspector.version())
-        print('hej')
         webcamFocusLock = instruments.CameraTIS(0, 0, 0, 0)
-        print('shop')
         webcamWidefield = instruments.CameraTIS(1, 25, 17, 725)
-        print('hopp')
 
-        win = control.TempestaSLMKatanaGUI(katanalaser, slm, scanZ, scanXY,
+        win = control.TempestaSLMKatanaGUI(slm, scanZ, scanXY,
                                            webcamFocusLock, webcamWidefield,
                                            aotf)
         win.show()

@@ -10,12 +10,12 @@ import math
 
 class LaserWidget(QtGui.QFrame):
     """Defines the layout of the whole widget including laser and aotf."""
-    def __init__(self, lasers, aotf, *args, **kwargs):
+    def __init__(self, aotf, *args, **kwargs):
         """lasers: list containing the different laser objects
         """
         super().__init__(*args, **kwargs)
 
-        self.katanalaser = lasers
+#        self.katanalaser = lasers
         self.aotf = aotf
 #        self.mW = Q_(1, 'mW')
 #        self.uW = Q_(1, 'uW')
@@ -28,12 +28,12 @@ class LaserWidget(QtGui.QFrame):
                                           color=(255, 33, 0), tickInterval=5,
                                           singleStep=0.1, channel=2,
                                           modulable=False)
-        self.katanaControl = LaserControl(self.katanalaser,
-                                          self.katanalaser.idn,
-                                          color=(109, 0, 0), tickInterval=5,
-                                          singleStep=0.1, modulable=False)
+#        self.katanaControl = LaserControl(self.katanalaser,
+#                                          self.katanalaser.idn,
+#                                          color=(109, 0, 0), tickInterval=5,
+#                                          singleStep=0.1, modulable=False)
 
-        self.controls = (self.greenControl, self.redControl, self.katanaControl)
+        self.controls = (self.greenControl, self.redControl)
 #        self.controls = (self.katanaControl)
 
         self.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Raised)
@@ -41,11 +41,11 @@ class LaserWidget(QtGui.QFrame):
         self.setLayout(grid)
         grid.addWidget(self.greenControl, 0, 0)
         grid.addWidget(self.redControl, 0, 1)
-        grid.addWidget(self.katanaControl, 0, 2)
+#        grid.addWidget(self.katanaControl, 0, 2)
 
         grid.setColumnMinimumWidth(0, 70)
         grid.setColumnMinimumWidth(1, 70)
-        grid.setColumnMinimumWidth(2, 70)
+#        grid.setColumnMinimumWidth(2, 70)
         grid.setRowMinimumHeight(0,75)
 
     def closeEvent(self, *args, **kwargs):
