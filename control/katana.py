@@ -6,7 +6,7 @@ Katana Serial Driver
 
 @author: STEDred
 """
-# TODO: Fix this driver.
+
 
 import numpy as np
 from lantz import Q_

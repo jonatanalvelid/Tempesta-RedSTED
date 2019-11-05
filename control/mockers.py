@@ -78,7 +78,8 @@ class MockLaser(Driver):
         """
         return 55555 * self.mW
 
-#TODO: Fix this mock, since I am changing the Katana class in instruments, and
+
+# TODO: Fix this mock, since I am changing the Katana class in instruments, and
 # giving it its own SerialDriver. Can base this one off of the one for the AOTF
 # for example.
 class MockKatanaLaser(object):
