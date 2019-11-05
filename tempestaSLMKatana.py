@@ -24,25 +24,26 @@ def main():
 #         instruments.AOTF('COM18') as aotf:
 
     katanalaser = instruments.OneFiveLaser(intensity_max=30)
-    slm = instruments.SLM()
     scanZ = instruments.ScanZ('COM19')
     scanXY = instruments.XYStage('COM20')
     aotf = instruments.AOTF('COM18')
 
-    print(katanalaser.idn)
-    print(scanZ.idn)
-    print(scanXY.idn)
-    print(aotf.idn)
-    # sp.Imspector() as imspector:
-    # print(imspector.version())
-    webcamFocusLock = instruments.CameraTIS(0, 0, 0, 0)
-    webcamWidefield = instruments.CameraTIS(1, 25, 17, 725)
-
-    win = control.TempestaSLMKatanaGUI(katanalaser, slm, scanZ, scanXY,
-                                       webcamFocusLock, webcamWidefield,
-                                       aotf)
-    win.show()
-    app.exec_()
+    with instruments.SLM() as slm:
+        
+        print(katanalaser.idn)
+        print(scanZ.idn)
+        print(scanXY.idn)
+        print(aotf.idn)
+        # sp.Imspector() as imspector:
+        # print(imspector.version())
+        webcamFocusLock = instruments.CameraTIS(0, 0, 0, 0)
+        webcamWidefield = instruments.CameraTIS(1, 25, 17, 725)
+    
+        win = control.TempestaSLMKatanaGUI(katanalaser, slm, scanZ, scanXY,
+                                           webcamFocusLock, webcamWidefield,
+                                           aotf)
+        win.show()
+        app.exec_()
 
 def analysisApp():
 

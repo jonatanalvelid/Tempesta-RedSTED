@@ -78,7 +78,9 @@ class MockLaser(Driver):
         """
         return 55555 * self.mW
 
-
+#TODO: Fix this mock, since I am changing the Katana class in instruments, and
+# giving it its own SerialDriver. Can base this one off of the one for the AOTF
+# for example.
 class MockKatanaLaser(object):
 
     def __init__(self, port="COM10", intensity_max=0.8):
@@ -118,9 +120,9 @@ class MockKatanaLaser(object):
     @power_sp.setter
     def power_sp(self, value):
         value = value.magnitude/1000  # Conversion from mW to W
-        if(self.power_setting != 1):
-            print("Wrong mode: impossible to change power value.")
-            return
+#        if(self.power_setting != 1):
+#            print("Wrong mode: impossible to change power value.")
+#            return
         if(value < 0):
             value = 0
         if(value > self.intensity_max):
@@ -193,7 +195,6 @@ class MockKatanaLaser(object):
         return "power command: "+'1'+"W"
 
     def getTemperature(self):
-        """Gets Temperature of SHG cristal"""
         return '13C'
 
     def getCurrent(self):
@@ -212,12 +213,9 @@ class MockSLM(object):
     @property
     def idn(self):
         return 'SLM mock'
-        
-    def getSize():
-        return((792, 600))
 
-    def updateArray(mask):
-        pass
+    def getSize():
+        return ((792, 600))
 
     def close(self):
         pass
@@ -233,6 +231,9 @@ class MockSLM(object):
         return self.get_image()
 
     def stop(self):
+        pass
+
+    def updateArray(mask):
         pass
 
 
