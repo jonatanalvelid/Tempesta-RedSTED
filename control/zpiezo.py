@@ -116,7 +116,7 @@ class PCZPiezo(SerialDriver):
         self.query('STIME ' + str(int(value)) + 'm')
 
     def close(self):
-        pass
+        self.finalize()
 
 
 if __name__ == '__main__':
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Test Kentech HRI')
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='Show interactive GUI')
-    parser.add_argument('-p', '--port', type=str, default='COM14',
+    parser.add_argument('-p', '--port', type=str, default='COMXX',
                         help='Serial port to connect to')
 
     args = parser.parse_args()

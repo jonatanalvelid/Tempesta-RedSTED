@@ -135,12 +135,13 @@ class LaserControl(QtGui.QFrame):
 
     def enableLaser(self):
         """Turns on the laser and sets its power to the value specified by the textbox."""
-        self.laser.enabled = True
+        self.laser.enabled = 1
         self.laser.power_sp = float(self.setPointEdit.text()) * self.mW
 
     def changeSlider(self, value):
-        """called when the slider is moved, sets the power of the laser to value"""
-        self.laser.power_sp = self.slider.value() * self.mW
+        """Called when the slider is moved, changes the power of the laser.
+        """
+        self.laser.power_sp = int(self.slider.value()) * self.mW
         self.setPointEdit.setText(str(round(self.laser.power_sp.magnitude*10,3)))
 
     def changeEdit(self):

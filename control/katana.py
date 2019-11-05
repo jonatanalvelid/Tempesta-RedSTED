@@ -6,227 +6,227 @@ Katana Serial Driver
 
 @author: STEDred
 """
-#TODO: Fix this driver.
-class OneFiveLaser(object):
-    """class used to control the 775 nm laser via a RS 232 interface. The commands are defined
-    in the laser manual, must be binary and end with an LF statement
+# TODO: Fix this driver.
 
-    :param string port: specifies the name of the port to which the laser is connected (usually COM10).
-    :param float intensity_max: specifies the maximum intensity (in our case in W) the user can ask the laser to emit. It is used to protect sensitive hardware from high intensities
+import numpy as np
+from lantz import Q_
+from lantz import Feat
+from lantz.drivers.legacy.serial import SerialDriver
+
+
+class OneFiveLaser(SerialDriver):
+    """Driver for the OneFive Katana laser.
+    Used to control the 775 nm laser via a RS232 interface.
+    Commands defined in the laser manual, end with an LF statement.
+
+    :param float intensity_max: specifies the max intensity threshold (in W).
+    Used to protect sensitive hardware (SLM) from high intensities.
+    Potentially remove this?
     """
 
-    def __init__(self, port="COM10", intensity_max=0.8):
-        self.serial_port = None
-        self.info = None      # Contains informations about the different methods of the laser. Can be used that the communication works
-        self.power_setting = 0    # To change the power with python
-        self.intensity_max = intensity_max
-        self.mode = 0     # Constant current or Power
-        self.triggerMode = 0        # Trigger=TTL input
-        self.enabled_state = False    # Laser initially off
+    ENCODING = 'ascii'
+
+    RECV_TERMINATION = '\n'
+    SEND_TERMINATION = '\n'
+
+    BAUDRATE = 38400
+    BYTESIZE = 8
+    PARITY = 'none'
+    STOPBITS = 1
+
+    #: flow control flags
+    RTSCTS = False
+    DSRDTR = False
+    XONXOFF = False
+
+    def query(self, arg):
+        return super().query(arg)
+
+    @Feat(read_once=True)
+    def idn(self):
+        """Get the product ID of the Katana.
+        """
+        return 'OneFive Katana 08HP 775 nm'
+
+    def initialize(self):
+        super().initialize()
+        self.intensity_max = 3.2  # maximum power setting for the Katana
+        self.power_setting = 0  # To change power with python (1) or knob (0)
+        self.mode = 0  # Constant current (1) or constant power (0) mode
+        self.triggerMode = 0  # Trigger=TTL input
+        self.enabled_state = 0  # Laser initially off (0)
+        self.W = Q_(1, 'W')
         self.mW = Q_(1, 'mW')
-        self.power_setpoint = 0
+        self.power_setpoint = 0  # Current laser power setpoint
         self.power_sp = 0*self.mW
 
-        try:
-            import serial
-            print('OneFiveLaser 1')
-            self.serial_port = serial.Serial(
-                 port=port,
-                 baudrate=38400,
-                 stopbits=serial.STOPBITS_ONE,
-                 bytesize=serial.EIGHTBITS
-                 )
-#            self.getInfo()
-            print('OneFiveLaser 2')
-            self.setPowerSetting()
-#            self.mode=self.getMode()
-            self.setPowerSetting(self.power_setting)
-            self.setTriggerSource(self.triggerMode)
-            print('OneFiveLaser 3')
-#        except serial.SerialException or serial.SerialTimeoutException:
-        except:
-            print('Mock OneFiveLaser loaded')
-            self = mockers.MockKatanaLaser()
+#        self.setPowerSetting()  # Why is this needed?
+        self.setPowerSetting(self.power_setting)
+        self.setTriggerSource(self.triggerMode)
 
-    @property
-    def idn(self):
-        return 'OneFive 775nm'
-
-    @property
+    @Feat
     def status(self):
         """Current device status
         """
         return 'OneFive laser status'
 
-    @property
+    @Feat
     def enabled(self):
-        """Method for turning on the laser
+        """Check if laser emission is on
         """
         return self.enabled_state
 
     @enabled.setter
     def enabled(self, value):
-        cmd = "le=" + str(int(value)) + "\n"
-        self.serial_port.write(cmd.encode())
+        """Turn on (1) or off (0) laser emission
+        """
+        cmd = "le=" + str(int(value))
+        self.query(cmd)
         self.enabled_state = value
 
     # LASER'S CONTROL MODE AND SET POINT
 
-    @property
+    @Feat
     def power_sp(self):
-        """To handle output power set point (mW)
+        """Check laser power set point (mW)
         """
-        return self.power_setpoint * 100 * self.mW
+        return float(self.query('lp?')) * self.W
 
     @power_sp.setter
     def power_sp(self, value):
-        """Handles output power. Sends a RS232 command to the laser specifying the new intensity."""
+        """Handles output power.
+        Sends a RS232 command to the laser specifying the new intensity.
+        """
         value = value.magnitude/1000  # Conversion from mW to W
         if(self.power_setting != 1):
-            print("Wrong mode: impossible to change power value. Please change the power settings")
+            print("Knob mode: impossible to change power value.")
             return
         if(value < 0):
             value = 0
         if(value > self.intensity_max):
-            value = self.intensity_max  # A too high intensity value can damage the SLM
+            value = self.intensity_max  # Too high intensity can damage SLM
         value = round(value, 3)
-        cmd = "lp=" + str(value) + "\n"
-        self.serial_port.write(cmd.encode())
+        cmd = "lp=" + str(value)
+        self.query(cmd)
         self.power_setpoint = value
+
+    @Feat
+    def current_sp(self):
+        """Check laser current
+        """
+        return float(self.query('li?'))
+
+    @current_sp.setter
+    def current_sp(self, value):
+        """Handles output current.
+        Sends a RS232 command to the laser specifying the new current.
+        """
+        if(self.mode != 1):
+            print("You can't set the current in constant power mode.")
+            return
+        if(value < 0):
+            value = 0
+        if(value > 10):
+            value = 10
+        value = round(value, 2)
+        cmd = "li=" + str(value)
+        self.query(cmd)
 
     # LASER'S CURRENT STATUS
 
     @property
     def power(self):
-        """To get the laser emission power (mW)
+        """To get the maximum output power (mW)
         """
-        return self.intensity_max * 100 * self.mW
-
-    def getInfo(self):
-        """Returns available commands"""
-        if self.info is None:
-            self.serial_port.write(b"h\n")
-            time.sleep(0.5)
-            self.info = self.serial_port.read_all().decode()
-        else:
-            print(self.info)
+        return self.intensity_max * 1000 * self.mW
 
     def setPowerSetting(self, manual=1):
-        """if manual=0, the power can be changed via this interface
-        if manual=1, it has to be changed by turning the button (manually)"""
+        """Power can be changed via this interface (1).
+        Power has to be changed by turning the knob (manually) (0).
+        """
         if(manual != 1 and manual != 0):
             print("setPowerSetting: invalid argument")
             self.power_setting = 0
         self.power_setting = manual
-        value = "lps" + str(manual) + "\n"
-        self.serial_port.write(value.encode())
+        cmd = "lps" + str(manual)
+        self.query(cmd)
 
-
-    def setMode(self, value) :
-        """value=1: constant current mode
-        value=0 : constant power mode"""
+    def setMode(self, value):
+        """Constant current mode (0) or constant power mode (1)
+        """
         if(value != 1 and value != 0):
-            print("wrong value")
+            print("Wrong value")
             return
         self.mode = value
-        cmd = "lip=" + str(value) + "\n"
-        self.serial_port.write(cmd.encode())
+        cmd = "lip=" + str(value)
+        self.query(cmd)
 
-    def setCurrent(self,value):
-        """sets current in constant current mode."""
-        if (self.mode!=1):
-            print("You can't set the current in constant power mode")
-            return
-        if(value<0):
-            value=0
-        if(value>6):
-            value=6 #Arbitrary limit to not burn the components
-        value=round(value,2)
-        cmd="li="+str(value)+"\n"
-        self.serial_port.write(cmd.encode())
-
-    def setFrequency(self,value):
-        """sets the pulse frequency in MHz"""
-        if(value<18 or value>80):
-            print("invalid frequency values")
-            return
-        value*=10**6
-        cmd="lx_freq="+str(value)+"\n"
-        self.serial_port.write(cmd.encode())
-
-    def setTriggerSource(self,source):
-        """source=0: internal frequency generator
-        source=1: external trigger source for adjustable trigger level, Tr-1 In
-        source=2: external trigger source for TTL trigger, Tr-2 In
+    @Feat
+    def frequency(self, value):
+        """Sets the pulse frequency in MHz
         """
-        if(source!=0 and source!=1 and source!=2):
+        if(value < 18 or value > 80):
+            print("invalid frequency values.")
+            return
+        value *= 10**6
+        cmd = "lx_freq=" + str(value)
+        self.query(cmd)
+
+    def setTriggerSource(self, source):
+        """Internal frequency generator (0)
+        External trigger source for adjustable trigger level (1), Tr-1 In
+        External trigger source for TTL trigger (2), Tr-2 In
+        """
+        if(source != 0 and source != 1 and source != 2):
             print("invalid source for trigger")
             return
-        cmd="lts="+str(source)+"\n"
-        self.triggerMode=source
-        self.serial_port.write(cmd.encode())
+        cmd = "lts=" + str(source)
+        self.query(cmd)
+        self.triggerMode = source
 
-    def setTriggerLevel(self,value):
-        """defines the trigger level in Volts, between -5 and 5V"""
-        if(np.absolute(value)>5):
+    def setTriggerLevel(self, value):
+        """Defines the trigger level in Volts, between -5 and 5V, for source(1)
+        """
+        if(np.absolute(value) > 5):
             print("incorrect value")
             return
-        if(self.triggerMode!=1):
-            print("impossible to change the \
-            trigger level with this trigger. Please change the trigger source first")
+        if(self.triggerMode != 1):
+            print("Please change trigger source.")
             return
-        value=round(value,2)
-        cmd="ltll="+str(value)+"\n"
-        self.serial_port.write(cmd.encode())
+        value = round(value, 2)
+        cmd = "ltll=" + str(value)
+        self.query(cmd)
 
-        #The get... methods return a string giving information about the laser
+    # The get... methods return a string giving information about the laser
+
     def getPower(self):
-        """Returns internal measured Laser power"""
-        self.serial_port.flushInput()
-        self.serial_port.write(b"lpa?\n")
-        value=self.serial_port.readline().decode()
-        return value
+        """Returns internally measured laser power
+        """
+        return str(float(self.query('lpa?')))
 
     def getMode(self):
-        """Returns mode of operation: constant current or current power"""
-        self.serial_port.flushInput()
-        self.serial_port.write(b"lip?\n")
-        value=self.serial_port.readline().decode()
-        if(value=="lip=0\n"):
-            value="Constant power mode"
-        else:
-            value="Constant current mode"
-        return value
-
-    def getPowerCommand(self):
-        """gets the nominal power command in W"""
-        self.serial_port.flushInput()
-        self.serial_port.write(b"lp?\n")
-        value=self.serial_port.readline().decode()
-        return "power command: "+value+"W"
-
-    def getTemperature(self):
-        """Gets Temperature of SHG cristal"""
-        self.serial_port.flushInput()
-        self.serial_port.write(b"lx_temp_shg?\n")
-        value=self.serial_port.readline().decode()
-        return value
-
-    def getCurrent(self):
-        """Returns actual current"""
-        self.serial_port.flushInput()
-        self.serial_port.write(b"li?\n")
-        value=self.serial_port.readline().decode()
-        return value
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args, **kwargs):
-        self.close()
+        """Returns mode of operation: constant current (1) or power (0)
+        """
+        return self.query('lip?')
 
     def close(self):
-        pass
-#        self.enabled = False
-#        self.serial_port.close()
-     
+        self.finalize()
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Test Katana HRI')
+    parser.add_argument('-i', '--interactive', action='store_true',
+                        default=False, help='Show interactive GUI')
+    parser.add_argument('-p', '--port', type=str, default='COMXX',
+                        help='Serial port to connect to')
+
+    args = parser.parse_args()
+    with OneFiveLaser('COM10') as inst:
+        if args.interactive:
+            from lantz.ui.qtwidgets import start_test_app
+            start_test_app(inst)
+        else:
+            # Add your test code here
+            print('Non interactive mode')

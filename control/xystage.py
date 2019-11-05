@@ -116,7 +116,7 @@ class MHXYStage(SerialDriver):
                    str(float(ypos)) + ' ' + str(float(radius)))
 
     def close(self):
-        pass
+        self.finalize()
 
 
 if __name__ == '__main__':

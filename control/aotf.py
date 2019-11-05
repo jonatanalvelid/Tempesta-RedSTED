@@ -102,9 +102,9 @@ class AAAOTF(SerialDriver):
         self.query('L' + str(channel) + 'O' + str(setting))
 
     def close(self):
-        pass
-    
-    
+        self.finalize()
+
+
 if __name__ == '__main__':
     import argparse
 #    import lantz.log

@@ -7,8 +7,6 @@ Created on Sun Dec 28 13:25:27 2014
 
 import numpy as np
 import importlib
-from lantz import Q_
-import time
 import control.mockers as mockers
 # import nidaqmx
 # from lantz.drivers.legacy.serial import SerialDriver
@@ -30,8 +28,9 @@ class Laser(object):
 
         except:
             return mockers.MockLaser()
-   
-#TODO: Check that this is doing everything correctly (not so sure about that).
+
+
+# TODO: Check that this is doing everything correctly (not so sure about that).
 class KatanaLaser(object):
     def __new__(cls, *args):
         try:
@@ -48,7 +47,7 @@ class KatanaLaser(object):
 
     def __exit__(self, *args, **kwargs):
         self.katana.close()
-        
+
 
 class SLM(object):
     """This object communicates with an SLM as a second monitor,
@@ -68,7 +67,7 @@ class SLM(object):
 
     def __exit__(self, *args, **kwargs):
         self.slm.close()
-        
+
 
 class AOTF(object):
     def __new__(cls, *args):
@@ -98,7 +97,7 @@ class ScanZ(object):
         except:
             print('Mock ScanZ loaded')
             return mockers.MockPCZPiezo()
-            
+
 #    def __init__(self, *args):
 #        try:
 #            from control.zpiezo import PCZPiezo
@@ -117,7 +116,7 @@ class ScanZ(object):
 
 
 class XYStage(object):
-    # new instead of init, since we want an instsance of the class to be returned
+    # new instead of init, we want an instsance of the class to be returned
     def __new__(cls, *args):
         try:
             from control.xystage import MHXYStage
@@ -127,7 +126,7 @@ class XYStage(object):
         except:
             print('Mock XYStage loaded')
             return mockers.MockMHXYStage()
-            
+
 #    def __init__(self, *args):
 #        try:
 #            from control.xystage import MHXYStage
