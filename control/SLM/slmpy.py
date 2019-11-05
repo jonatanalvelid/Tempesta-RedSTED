@@ -90,11 +90,9 @@ class SLMdisplay(object):
         return self.vt.frame._resX, self.vt.frame._resY
 
     def updateArray(self, ev_mask):
-        """
-        Update the SLM monitor with the supplied EvMask.
+        """Update the SLM monitor with the supplied EvMask.
         Note that the array is not the same size as the SLM resolution,
-        the image will be deformed to fit the screen.
-        """
+        the image will be deformed to fit the screen."""
         mask = ev_mask.correc + ev_mask
         array = mask.image()
 
