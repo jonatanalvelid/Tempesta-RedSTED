@@ -92,6 +92,7 @@ class MockKatanaLaser(object):
         self.triggerMode = 0  # Trigger=TTL input
         self.enabled_state = False  # Laser initially off
         self.mW = Q_(1, 'mW')
+        self.power_setpoint = 0  # Current laser power setpoint
 
     @property
     def idn(self):
