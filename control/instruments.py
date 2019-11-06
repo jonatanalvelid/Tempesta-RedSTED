@@ -30,7 +30,6 @@ class Laser(object):
             return mockers.MockLaser()
 
 
-# TODO: Check that this is doing everything correctly (not so sure about that).
 class KatanaLaser(object):
     def __new__(cls, *args):
         try:
