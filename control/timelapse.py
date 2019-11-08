@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Nov  6 11:45:51 2019
+Created on Wed Nov 6 11:45:51 2019
 
 Widget for doing timelapse imaging in Imspector, controlled from Tempesta.
 
