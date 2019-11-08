@@ -14,7 +14,7 @@ class TilingWidget(QtGui.QFrame):
     def __init__(self, xystage, focuswidget, imspector, main=None, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.setMinimumSize(2, 350)  # Set the minimum size of the widget
+        self.setMinimumSize(200, 200)  # Set the minimum size of the widget
 
         self.xystage = xystage
         self.focusWidget = focuswidget
@@ -69,7 +69,8 @@ class TilingWidget(QtGui.QFrame):
 
         # Add status bar, a non-editable text, that tells the current state
         self.statusLabel = QtGui.QLabel('Status:')
-        self.statusText = QtGui.QLineEdit('Click "Initialize tiling" to start tiling acquisition')
+        self.statusText = QtGui.QLineEdit(
+                'Click "Initialize tiling" to start tiling acquisition')
         self.statusText.setReadOnly(True)
 
         # GUI layout
@@ -112,7 +113,8 @@ class TilingWidget(QtGui.QFrame):
 #            print('Next tile!')
             self.countrows = 0
             self.nexttile()
-            self.statusText.setText('Tiling in progress, tile %d of %d' % (self.tilenumber+1, self.numberoftiles))
+            self.statusText.setText('Tiling in progress, tile %d of %d' %
+                                    (self.tilenumber + 1, self.numberoftiles))
             # frame is finished, move to next tile in a good way!
 
     def tilingFocusCheckVarChange(self):
@@ -147,13 +149,16 @@ class TilingWidget(QtGui.QFrame):
             self.tilingActiveVar = True
             self.initTilingButton.setText('Reset/stop tiling')
             # Get the tile step distance in um, i.e. tile size minus margin
-            self.tilestepsize = float(self.tilesSizeEdit.text()) - float(self.tilesMarginEdit.text())
-            self.numberoftiles = int(self.tilesXEdit.text())*int(self.tilesYEdit.text())
+            self.tilestepsize = float(self.tilesSizeEdit.text()) - \
+                float(self.tilesMarginEdit.text())
+            self.numberoftiles = int(self.tilesXEdit.text()) * \
+                int(self.tilesYEdit.text())
             self.tilenumber = 0
             # Create a new tilefoci-array if this is a new focus check tiling
             if self.tilingFocusCheckVar:
                 self.tilefoci = np.zeros(self.numberoftiles)
-                self.statusText.setText('Setting tiling foci, tile %d of %d' % (self.tilenumber+1, self.numberoftiles))
+                self.statusText.setText('Setting tiling foci, tile %d of %d'
+                                        % (self.tilenumber+1, self.numberoftiles))
             else:
                 print(self.tilefoci)
             # If you want to do automatic tiling, check the number of rows in the active imspector measurement stack window
@@ -164,14 +169,17 @@ class TilingWidget(QtGui.QFrame):
                 # Double check if the measurement in imspector is actually a stack with the thrid axis as the Sync 0 axis
                 # Also check if the number of frames in Sync 0 is matchin the number of tiles!
                 # Also check if the size of the tiles equals the size of the measurement in Imepsctor
-                if self.measurementparams['Sync']['0Res'] == self.numberoftiles and self.measurementparams['NiDAQ6353'][':YLen'] == float(self.tilesSizeEdit.text()) and round(self.measurementparams['NiDAQ6353'][':XLen']) == float(self.tilesSizeEdit.text()):
+                if self.measurementparams['Sync']['0Res'] == self.numberoftiles \
+                and self.measurementparams['NiDAQ6353'][':YLen'] == float(self.tilesSizeEdit.text()) \
+                and round(self.measurementparams['NiDAQ6353'][':XLen']) == float(self.tilesSizeEdit.text()):
                     if self.measurementparams['Measurement']['ThdAxis'] == 'Sync 0':
 #                        print('One-color tiling in progress!')
                         self.statusText.setText('One-color tiling started, tile %d of %d' % (self.tilenumber+1, self.numberoftiles))
                         self.imspector.connect_end(self,1)
                         self.rowsperframe = self.measurementparams['NiDAQ6353'][':YRes']
 #                        print(self.rowsperframe)
-                    elif self.measurementparams['Measurement']['SecAxis'] == 'NiDAQ6353 DACs::4' and self.measurementparams['Measurement']['FthAxis'] == 'Sync 0':
+                    elif self.measurementparams['Measurement']['SecAxis'] == 'NiDAQ6353 DACs::4' \
+                    and self.measurementparams['Measurement']['FthAxis'] == 'Sync 0':
 #                        print('Two-color tiling in progress!')
                         self.statusText.setText('Two-color tiling started, tile %d of %d' % (1, self.numberoftiles))
                         self.imspector.connect_end(self,1)
@@ -188,15 +196,20 @@ class TilingWidget(QtGui.QFrame):
                     self.statusText.setText('Number of tiles and number of frames in Imspector or size of tile and size of frame in Imspector measurement do not agree. Double check your settings.')
                     self.endtiling()
                     return
-            self.tilesxsteps = np.ones((int(self.tilesYEdit.text()), int(self.tilesXEdit.text())-1))
-            self.tilesxstepstemp = np.ones((int(self.tilesYEdit.text()),1)) * (int(self.tilesXEdit.text())-1) * -1
-            self.tilesxsteps = np.concatenate((self.tilesxsteps, self.tilesxstepstemp), axis=1)
+            self.tilesxsteps = np.ones((int(self.tilesYEdit.text()),
+                                        int(self.tilesXEdit.text())-1))
+            self.tilesxstepstemp = np.ones((int(self.tilesYEdit.text()), 1)) *\
+                (int(self.tilesXEdit.text())-1) * -1
+            self.tilesxsteps = np.concatenate((self.tilesxsteps,
+                                               self.tilesxstepstemp), axis=1)
             self.tilesxsteps = np.ndarray.flatten(self.tilesxsteps)
             print(self.tilesxsteps)
-            
-            self.tilesysteps = np.zeros((int(self.tilesYEdit.text()), int(self.tilesXEdit.text())-1))
-            self.tilesystepstemp = np.ones((int(self.tilesYEdit.text()),1)) * 1
-            self.tilesysteps = np.concatenate((self.tilesysteps, self.tilesystepstemp), axis=1)
+
+            self.tilesysteps = np.zeros((int(self.tilesYEdit.text()),
+                                         int(self.tilesXEdit.text()) - 1))
+            self.tilesystepstemp = np.ones((int(self.tilesYEdit.text()), 1))
+            self.tilesysteps = np.concatenate((self.tilesysteps,
+                                               self.tilesystepstemp), axis=1)
             self.tilesysteps = np.ndarray.flatten(self.tilesysteps)
             self.tilesysteps[-1] = -(int(self.tilesYEdit.text()) - 1)
             print(self.tilesysteps)
@@ -213,14 +226,17 @@ class TilingWidget(QtGui.QFrame):
             # print(self.tilesxsteps[self.tilenumber])
             # Save the current tiles focus, if the focuscheckvar is checked.
             if self.tilingFocusCheckVar:
-                self.tilefoci[self.tilenumber] = self.focusWidget.getFocusPosition()
+                self.tilefoci[self.tilenumber] = \
+                    self.focusWidget.getFocusPosition()
             # First unlock focus, if it is locked
             if self.focusWidget.locked:
                 self.focusWidget.unlockFocus()
             # Move stage the tiling step distances required for the next step
             # Interchange X and Y to mimic Imspectors X and Y axes
-            self.xystage.move_relY(float(self.tilestepsize * self.tilesxsteps[self.tilenumber]))
-            self.xystage.move_relX(float(self.tilestepsize * self.tilesysteps[self.tilenumber]))
+            self.xystage.move_relY(float(self.tilestepsize *
+                                         self.tilesxsteps[self.tilenumber]))
+            self.xystage.move_relX(float(self.tilestepsize *
+                                         self.tilesysteps[self.tilenumber]))
             # Check if the last step has been taken
             if self.tilenumber == self.numberoftiles-1:
                 # If so, finish the tiling

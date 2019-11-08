@@ -101,6 +101,10 @@ class AAAOTF(SerialDriver):
         """ Turn channel on (1) or off (0). """
         self.query('L' + str(channel) + 'O' + str(setting))
 
+    def close(self):
+        self.finalize()
+
+
 if __name__ == '__main__':
     import argparse
 #    import lantz.log

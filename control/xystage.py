@@ -115,6 +115,9 @@ class MHXYStage(SerialDriver):
         self.query('!clim ' + str(float(xpos)) + ' ' +
                    str(float(ypos)) + ' ' + str(float(radius)))
 
+    def close(self):
+        self.finalize()
+
 
 if __name__ == '__main__':
     import argparse

@@ -5,21 +5,10 @@ Created on Tue Aug 12 20:02:08 2014
 @author: Federico Barabas
 """
 
-# -*- coding: utf-8 -*-
-"""
-    lantz.simulators.fungen
-    ~~~~~~~~~~~~~~~~~~~~~~~
-
-    A simulated function generator.
-    See specification in the Lantz documentation.
-
-    :copyright: 2012 by The Lantz Authors
-    :license: BSD, see LICENSE for more details.
-"""
-
 import logging
 import numpy as np
 import pygame
+import time
 
 from lantz import Driver
 from lantz import Action, Feat
@@ -34,6 +23,7 @@ class constants:
     def __init__(self):
         self.GND = 0
 
+
 class MockLaser(Driver):
 
     def __init__(self):
@@ -43,6 +33,9 @@ class MockLaser(Driver):
 
         self.enabled = False
         self.power_sp = 0 * self.mW
+
+    def close(self):
+        pass
 
     @property
     def idn(self):
@@ -86,20 +79,148 @@ class MockLaser(Driver):
         return 55555 * self.mW
 
 
+# TODO: Fix this mock, since I am changing the Katana class in instruments, and
+# giving it its own SerialDriver. Can base this one off of the one for the AOTF
+# for example.
+class MockKatanaLaser(object):
+
+    def __init__(self, port="COM10", intensity_max=0.8):
+        self.serial_port = None
+        self.info = None
+        self.power_setting = 0  # To change the power with python
+        self.intensity_max = intensity_max
+        self.mode = 0  # Constant current or Power
+        self.triggerMode = 0  # Trigger=TTL input
+        self.enabled_state = False  # Laser initially off
+        self.mW = Q_(1, 'mW')
+        self.power_setpoint = 0  # Current laser power setpoint
+
+    @property
+    def idn(self):
+        return 'OneFive 775nm mock'
+
+    @property
+    def status(self):
+        return 'OneFive laser status'
+
+    @property
+    def enabled(self):
+        return self.enabled_state
+
+    @enabled.setter
+    def enabled(self, value):
+        self.enabled_state = value
+
+    # LASER'S CONTROL MODE AND SET POINT
+
+    @property
+    def power_sp(self):
+        """To handle output power set point (mW)
+        """
+        return self.power_setpoint * 100 * self.mW
+
+    @power_sp.setter
+    def power_sp(self, value):
+        value = value.magnitude/1000  # Conversion from mW to W
+#        if(self.power_setting != 1):
+#            print("Wrong mode: impossible to change power value.")
+#            return
+        if(value < 0):
+            value = 0
+        if(value > self.intensity_max):
+            value = self.intensity_max
+        value = round(value, 3)
+        self.power_setpoint = value
+
+    # LASER'S CURRENT STATUS
+
+    @property
+    def power(self):
+        return self.intensity_max * 100 * self.mW
+
+    def getInfo(self):
+        if self.info is None:
+            time.sleep(0.5)
+        else:
+            print(self.info)
+
+    def setPowerSetting(self, manual=1):
+        if(manual != 1 and manual != 0):
+            print("setPowerSetting: invalid argument")
+            self.power_setting = 0
+        self.power_setting = manual
+
+    def setMode(self, value):
+        if(value != 1 and value != 0):
+            print("wrong value")
+            return
+        self.mode = value
+
+    def setCurrent(self, value):
+        if (self.mode != 1):
+            print("You can't set the current in constant power mode")
+            return
+        if(value < 0):
+            value = 0
+        if(value > 6):
+            value = 6  # Arbitrary limit to not burn the components
+        value = round(value, 2)
+
+    def setFrequency(self, value):
+        if(value < 18 or value > 80):
+            print("invalid frequency values")
+            return
+        value *= 10**6
+
+    def setTriggerSource(self, source):
+        if(source != 0 and source != 1 and source != 2):
+            print("invalid source for trigger")
+            return
+
+    def setTriggerLevel(self, value):
+        if(np.absolute(value) > 5):
+            print("incorrect value")
+            return
+        if(self.triggerMode != 1):
+            print("impossible to change the trigger level with this trigger.")
+            return
+        value = round(value, 2)
+
+    def getPower(self):
+        return 1
+
+    def getMode(self):
+        value = "Constant power mode"
+        return value
+
+    def getPowerCommand(self):
+        return "power command: "+'1'+"W"
+
+    def getTemperature(self):
+        return '13C'
+
+    def getCurrent(self):
+        return '1A'
+
+    def close(self):
+        pass
+
+
 class MockSLM(object):
 
-    def __init__(self,monitor = 1, isImageLock = False):
+    def __init__(self, monitor=1, isImageLock=False):
         super(MockSLM).__init__()
         print('Simulated SLM')
 
-        def getSize():
-            return((792,600))
+    @property
+    def idn(self):
+        return 'SLM mock'
 
-        def updateArray(mask):
-            pass
+    def getSize():
+        return ((792, 600))
 
-        def close(self):
-            pass
+    def close(self):
+        pass
 
     def start(self):
         pass
@@ -114,12 +235,18 @@ class MockSLM(object):
     def stop(self):
         pass
 
+    def updateArray(mask):
+        pass
+
 
 class MockLeicaZDrive(object):
 
     def __init__(self, SerialDriver=0):
         super().__init__()
         print('Simulated Leica Z-drive')
+
+    def close(self):
+        pass
 
     @Feat()
     def absZ(self):
@@ -148,6 +275,47 @@ class MockPCZPiezo(object):
         super().__init__()
         print('Simulated PiezoConcept Z-piezo')
 
+    @property
+    def idn(self):
+        return 'PC Z-piezo mock'
+        
+    def close(self):
+        pass
+
+    @Feat()
+    def absZ(self):
+        """ Absolute Z position. """
+        pass
+
+    @absZ.setter
+    def absZ(self, value):
+        """ Absolute Z position movement. """
+        pass
+
+    @Feat()
+    def relZ(self):
+        """ Absolute Z position. """
+        pass
+
+    @relZ.setter
+    def relZ(self, value):
+        """ Relative Z position movement. """
+        pass
+
+
+class MockMHXYStage(object):
+
+    def __init__(self, SerialDriver=0):
+        super().__init__()
+        print('Simulated Marzhauser Z-piezo')
+
+    @property
+    def idn(self):
+        return 'Marzhauser XY-stage mock'
+        
+    def close(self):
+        pass
+
     @Feat()
     def absZ(self):
         """ Absolute Z position. """
@@ -174,6 +342,13 @@ class MockAAAOTF(object):
     def __init__(self, SerialDriver=0):
         super().__init__()
         print('Simulated AA AOTF')
+
+    @property
+    def idn(self):
+        return 'AA AOTF mock'
+        
+    def close(self):
+        pass
 
     # POWER ADJUSTMENT
 
@@ -222,6 +397,9 @@ class MockWebcam(object):
     def __init__(self):
         super().__init__()
         print('Simulated Webcam')
+
+    def close(self):
+        pass
 
     def start(self):
         pass
@@ -488,3 +666,7 @@ class MockHamamatsu(Driver):
     #
     def shutdown(self):
         pass
+
+    def close(self):
+        pass
+    
