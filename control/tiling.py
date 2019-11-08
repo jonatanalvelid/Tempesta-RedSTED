@@ -14,7 +14,7 @@ class TilingWidget(QtGui.QFrame):
     def __init__(self, xystage, focuswidget, imspector, main=None, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.setMinimumSize(2, 350)  # Set the minimum size of the widget
+        self.setMinimumSize(200, 200)  # Set the minimum size of the widget
 
         self.xystage = xystage
         self.focusWidget = focuswidget

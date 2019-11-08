@@ -28,7 +28,7 @@ class WidefieldWidget(QtGui.QFrame):
     def __init__(self, webcam, main=None, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.setMinimumSize(2, 350)
+        self.setMinimumSize(200, 350)
 
         self.main = main  # main va a ser RecordingWidget de control.py
         self.webcam = webcam

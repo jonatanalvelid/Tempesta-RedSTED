@@ -114,43 +114,45 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         dockArea = DockArea()
 
         # Laser Widget
-        laserDock = Dock("Laser Control", size=(600, 500))
+        laserDock = Dock("Laser Control", size=(400, 500))
         self.lasers = stedlaser
         self.laserWidgets = LaserWidget.LaserWidget(self.lasers, self.aotf)
         laserDock.addWidget(self.laserWidgets)
-        dockArea.addDock(laserDock)
+        dockArea.addDock(laserDock, 'right')
 
         # SLM widget
-        slmDock = Dock("SLM", size=(600, 300))
+        slmDock = Dock("SLM", size=(400, 300))
         self.slmWidget = slmWidget.slmWidget(self.slm)
         slmDock.addWidget(self.slmWidget)
-        dockArea.addDock(slmDock, "right", laserDock)
+        dockArea.addDock(slmDock, "bottom", laserDock)
+
+
+        # Widefield camera widget
+        widefieldDock = Dock("Widefield", size=(500, 500))
+        self.widefieldWidget = widefield.WidefieldWidget(webcamWidefield)
+        widefieldDock.addWidget(self.widefieldWidget)
+        dockArea.addDock(widefieldDock, "left")
 
         # Focus lock widget
-        focusDock = Dock("Focus lock", size=(600, 500))
+        focusDock = Dock("Focus lock", size=(500, 500))
         self.focusWidget = focus.FocusWidget(self.scanZ, webcamFocusLock,
                                              self.imspector)
         focusDock.addWidget(self.focusWidget)
-        dockArea.addDock(focusDock, "above", laserDock)
-
-        # Widefield camera widget
-        widefieldDock = Dock("Widefield", size=(600, 500))
-        self.widefieldWidget = widefield.WidefieldWidget(webcamWidefield)
-        widefieldDock.addWidget(self.widefieldWidget)
-        dockArea.addDock(widefieldDock, "below", focusDock)
-
+        dockArea.addDock(focusDock, "below", widefieldDock)
+        
+        # Timelapse widget
+        timelapseDock = Dock("Timelapse", size=(500, 200))
+        self.timelapseWidget = timelapse.TimelapseWidget(self.imspector)
+        timelapseDock.addWidget(self.timelapseWidget)
+        dockArea.addDock(timelapseDock, "top", widefieldDock)
+        
         # XY-scanner tiling widget
-        tilingDock = Dock("Tiling", size=(600, 500))
+        tilingDock = Dock("Tiling", size=(500, 200))
         self.tilingWidget = tiling.TilingWidget(self.scanXY, self.focusWidget,
                                                 self.imspector)
         tilingDock.addWidget(self.tilingWidget)
-        dockArea.addDock(tilingDock, "below", widefieldDock)
+        dockArea.addDock(tilingDock, "below", timelapseDock)
 
-        # Timelapse widget
-        timelapseDock = Dock("Timelapse", size=(600, 500))
-        self.timelapseWidget = timelapse.TimelapseWidget(self.imspector)
-        timelapseDock.addWidget(self.timelapseWidget)
-        dockArea.addDock(timelapseDock, "below", tilingDock)
 
         self.setWindowTitle('Tempesta - RedSTED edition')
         self.cwidget = QtGui.QWidget()

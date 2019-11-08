@@ -18,7 +18,7 @@ class TimelapseWidget(QtGui.QFrame):
     def __init__(self, imspector, main=None, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.setMinimumSize(2, 350)  # Set the minimum size of the widget
+        self.setMinimumSize(200, 100)  # Set the minimum size of the widget
 
         self.imspector = imspector
         self.main = main
@@ -29,7 +29,7 @@ class TimelapseWidget(QtGui.QFrame):
         self.rowsperframe = 0  # number of rows per frame in Imspector meas
         self.numberofframes = 0  # number of frames for timelapse
 
-        self.framesLabel = QtGui.QLabel('Number of frames, F')
+        self.framesLabel = QtGui.QLabel('Number of frames')
         self.framesEdit = QtGui.QLineEdit('1')
         self.frametimeLabel = QtGui.QLabel('Time between frames [s]')
         self.frametimeEdit = QtGui.QLineEdit('60')
@@ -61,15 +61,16 @@ class TimelapseWidget(QtGui.QFrame):
         self.countrows = self.countrows + 1
         if self.countrows == self.rowsperframe:
             # Check if last step has been taken
-            if self.framenumber == self.numberofframes-1:
+            if self.framenumber == self.numberofframes:
                 # Finish timelapse
+                self.reptimer.stop()
                 self.endtimelapse()
             else:
                 # Pause measurement in Imspector
                 self.imspector.pause(self.immeasurement)
                 self.countrows = 0
-                self.statusText.setText('Timelapse in progress, frame %d of %d' %
-                                        (self.framenumber+1,
+                self.statusText.setText('Timelapse in progress, recorded frames: %d of %d' %
+                                        (self.framenumber,
                                          self.numberofframes))
 
     def inittimelapse(self):
@@ -79,20 +80,20 @@ class TimelapseWidget(QtGui.QFrame):
             # Get the frametime in s
             self.frametime = float(self.frametimeEdit.text())
             self.numberofframes = int(self.framesEdit.text())
-            self.tilenumber = 0
+            self.framenumber = 0
             self.immeasurement = self.imspector.active_measurement()
             self.measurementparams = self.immeasurement.parameters('')
             # Double check if measurement in imspector is stack with the third
             # axis as the Sync 0 axis. Also check if number of frames in Sync 0
             # is at least as many as the number of frames here. Also connect
             # end of frame-signal to __call__ function.
-            if self.measurementparams['Sync']['0Res'] >= self.numberofframes:
+            if self.measurementparams['Sync']['0Res'] == self.numberofframes:
                 if self.measurementparams['Measurement']['ThdAxis'] == 'Sync 0':
-                    self.statusText.setText('One-color timelapse started, frame %d of %d' % (self.framenumber+1, self.numberofframes))
+                    self.statusText.setText('One-color timelapse started, recodring frame: %d of %d' % (self.framenumber+1, self.numberofframes))
                     self.imspector.connect_end(self,1)
                     self.rowsperframe = self.measurementparams['NiDAQ6353'][':YRes']
                 elif self.measurementparams['Measurement']['SecAxis'] == 'NiDAQ6353 DACs::4' and self.measurementparams['Measurement']['FthAxis'] == 'Sync 0':
-                    self.statusText.setText('Two-color timelapse started, frame %d of %d' % (self.framenumber+1, self.numberofframes))
+                    self.statusText.setText('Two-color timelapse started, recording frame: %d of %d' % (self.framenumber+1, self.numberofframes))
                     self.imspector.connect_end(self,1)
                     # Use double the number of rows, for two-color imaging
                     self.rowsperframe = 2*self.measurementparams['NiDAQ6353'][':YRes']
@@ -101,29 +102,33 @@ class TimelapseWidget(QtGui.QFrame):
                     self.endtimelapse()
                     return
                 self.reptimer = RepeatedTimer(self.frametime, self.nextframe)
+                self.nextframe()
             else:
                 self.statusText.setText('Number of frames in Imspector and here do not agree. Double check your settings.')
                 self.endtimelapse()
                 return
 
         else:
+            self.reptimer.stop()
             self.endtimelapse()
 
     def nextframe(self):
         if self.timelapseActiveVar:
             # Change frame number to next frame, resume Imsp measurement
-            self.framenumber = self.framenumber + 1
             self.imspector.pause(self.immeasurement)
-            # possibly this, have to test. But I believe this starts the measurement anew instead.
-#            self.imspector.start(self.immeasurement)
+            self.statusText.setText('Timelapse in progress, recording frame: %d of %d' %
+                                        (self.framenumber+1,
+                                         self.numberofframes))
+            self.framenumber = self.framenumber + 1
 
     def endtimelapse(self):
         # Do all the things needed to be done when you finish or end a tiling
-        self.reptimer.stop()
         self.imspector.disconnect_end(self, 1)
         self.timelapseActiveVar = False
         self.framenumber = 0
+        self.countrows = 0
         self.initTimelapseButton.setText('Initialize timelapse')
+        self.statusText.setText('Click "Initialize timelapse" to start timelapse acquisition')
 
     def closeEvent(self, *args, **kwargs):
         super().closeEvent(*args, **kwargs)
