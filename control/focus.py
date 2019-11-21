@@ -419,16 +419,19 @@ class ProcessDataThread(QtCore.QThread):
             #                                     hsub=self.ws['hsub'],
             #                                     top=self.ws['top'],
             #                                     bot=self.ws['bot'])
-            # then = time.time()
+#            then = time.time()
             self.image = self.webcam.grab_image()
-            # now = time.time()
-            # print("Focus: Whole grab image took: ", now-then, " seconds")
+#            now = time.time()
+#            print("Focus: Whole grab image took:", now-then, "seconds.")
             # print("")
         except:
+            print("No image grabbed.")
             pass
         imagearray = self.image
 #        imagearray = imagearray[0:720,200:1310]
 #        imagearray = imagearray[300:450,0:1310]
+#        print(np.size(imagearray))
+#        print(np.shape(imagearray))
         imagearray = imagearray[0:1024,730:830]
         imagearray = np.swapaxes(imagearray,0,1)      # Swap matrix axes, after having turned the camera 90deg
         # imagearraygf = imagearray

@@ -307,7 +307,7 @@ class MockMHXYStage(object):
 
     def __init__(self, SerialDriver=0):
         super().__init__()
-        print('Simulated Marzhauser Z-piezo')
+        print('Simulated Marzhauser XY-stage')
 
     @property
     def idn(self):
@@ -318,22 +318,22 @@ class MockMHXYStage(object):
 
     @Feat()
     def absZ(self):
-        """ Absolute Z position. """
+        """ Absolute XY position. """
         pass
 
     @absZ.setter
     def absZ(self, value):
-        """ Absolute Z position movement. """
+        """ Absolute XY position movement. """
         pass
 
     @Feat()
     def relZ(self):
-        """ Absolute Z position. """
+        """ Absolute XY position. """
         pass
 
     @relZ.setter
     def relZ(self, value):
-        """ Relative Z position movement. """
+        """ Relative XY position movement. """
         pass
 
 

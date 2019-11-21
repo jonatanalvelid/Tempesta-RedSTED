@@ -103,7 +103,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         self.presetsMenu = QtGui.QComboBox()
         self.presetDir = datapath
         if not(os.path.isdir(self.presetDir)):
-            self.presetDir = os.path.join(os.getcwd(), 'control/Presets')
+            self.presetDir = os.path.join(os.getcwd(), 'control\\Presets')
         for preset in os.listdir(self.presetDir):
             self.presetsMenu.addItem(preset)
         self.loadPresetButton = QtGui.QPushButton('Load preset')

@@ -17,7 +17,7 @@ import glob
 
 s_pix = 0.02  # pixel size in mm (SLM)
 # Path to the correction files for the SLM
-path_to_correction = u"C:\\Users\\aurelien.barbotin\Documents\SLM control software\deformation_correction_pattern"
+path_to_correction = u"C:\\Users\\STEDRed\\Documents\\HamamatsuSLM\\deform_corr_patterns\\"
 
 # Getting the list of the correction wavelength
 correction_list = glob.glob(path_to_correction + "\*.bmp")
