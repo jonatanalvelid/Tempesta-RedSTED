@@ -115,8 +115,8 @@ class slmWidget(QtGui.QFrame):
                           autoRange=True)
         self.vb.addItem(self.img)
         self.vb.setAspectLocked(True)
-        print(self.mask)
-        print(self.slm)
+#        print(self.mask)
+#        print(self.slm)
         self.slm.updateArray(self.mask)
 
         self.arrowsModule = ArrowsControl()
@@ -139,15 +139,17 @@ class slmWidget(QtGui.QFrame):
         # GUI layout
         grid = QtGui.QGridLayout()
         self.setLayout(grid)
-        grid.addWidget(imageWidget, 0, 0, 4, 3)
-        grid.addWidget(self.tree, 5, 0, 1, 1)
-        grid.addWidget(self.treeAber, 4, 0, 1, 1)
-        grid.addWidget(self.arrowsModule, 4, 1, 1, 1)
+        grid.addWidget(imageWidget, 0, 0, 1, 2)
+        grid.addWidget(self.treeAber, 1, 0, 1, 1)
+        grid.addWidget(self.tree, 2, 0, 1, 1)
+        grid.addWidget(self.arrowsModule, 1, 1, 2, 1)
 
         grid.setColumnMinimumWidth(1, 100)
         grid.setColumnMinimumWidth(2, 40)
         grid.setColumnMinimumWidth(0, 100)
-        grid.setRowMinimumHeight(0, 75)
+        grid.setRowMinimumHeight(0, 200)
+        grid.setRowMinimumHeight(1, 200)
+        grid.setRowMinimumHeight(2, 50)
 
     def upClicked(self):
         """Moves the current Mask up"""

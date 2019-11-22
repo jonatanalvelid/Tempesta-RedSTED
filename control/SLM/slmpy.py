@@ -4,6 +4,8 @@ Created on Sun Dec 06 20:14:02 2015
 
 @author: Sebastien Popoff
 from http://wavefrontshaping.net
+http://wavefrontshaping.net/index.php/57-community/tutorials/...
+spatial-lights-modulators-slms/124-how-to-control-a-slm-with-python
 """
 
 try:
@@ -15,8 +17,7 @@ import numpy as np
 # import matplotlib.pyplot as plt
 
 
-# found on the internet at this adress :
-# http://wavefrontshaping.net/index.php/57-community/tutorials/spatial-lights-modulators-slms/124-how-to-control-a-slm-with-python
+
 
 EVT_NEW_IMAGE = wx.PyEventBinder(wx.NewEventType(), 0)
 

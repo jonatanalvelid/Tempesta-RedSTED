@@ -11,7 +11,6 @@ import control.mockers as mockers
 # import nidaqmx
 # from lantz.drivers.legacy.serial import SerialDriver
 # from lantz import Action, Feat
-from control.SLM import slmpy
 
 
 class Laser(object):
@@ -56,6 +55,7 @@ class SLM(object):
     def __init__(self):
         super(SLM).__init__()
         try:
+            from control.SLM import slmpy
             self.slm = slmpy.SLMdisplay()
         except:
             print("Mock SLM loaded")

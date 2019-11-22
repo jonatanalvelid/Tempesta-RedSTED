@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 #    lantz.log.log_to_screen(lantz.log.DEBUG)
-    with AAAOTF('COM18') as inst:
+    with AAAOTF('COM5') as inst:
         if args.interactive:
             from lantz.ui.qtwidgets import start_test_app
             start_test_app(inst)
