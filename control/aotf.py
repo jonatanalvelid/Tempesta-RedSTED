@@ -64,7 +64,7 @@ class AAAOTF(SerialDriver):
     def power(self, channel, value):
         """ Power adjustment for channel X, from 0 to 1023. """
 #        print('aotfpow1')
-        valueaotf = round(value/1023*1023)  # assuming input value is [0,1]
+        valueaotf = round(value)  # assuming input value is [0,1023]
 #        print('aotfpow2')
         if valueaotf > self.intensity_max:  # if input value higher than 1
             valueaotf = self.intensity_max

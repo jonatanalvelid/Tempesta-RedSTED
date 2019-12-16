@@ -126,7 +126,6 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         slmDock.addWidget(self.slmWidget)
         dockArea.addDock(slmDock, "bottom", laserDock)
 
-
         # Widefield camera widget
         widefieldDock = Dock("Widefield", size=(500, 500))
         self.widefieldWidget = widefield.WidefieldWidget(webcamWidefield)

@@ -33,7 +33,7 @@ class ImageEvent(wx.PyCommandEvent):
 
 class SLMframe(wx.Frame):
     """Frame used to display full screen image."""
-    def __init__(self, monitor=2, isImageLock=True):
+    def __init__(self, monitor=1, isImageLock=True):
         self.isImageLock = isImageLock
         # Create the frame
         # wx.Frame.__init__(self,None,-1,'SLM window',pos = (self._x0, self._y0), size = (self._resX, self._resY))
@@ -74,7 +74,7 @@ class SLMframe(wx.Frame):
 
 class SLMdisplay(object):
     """Interface for sending images to the display frame."""
-    def __init__(self, monitor=2, isImageLock=False):
+    def __init__(self, monitor=1, isImageLock=False):
         # Without this option, an error message appears when the windows is
         # closed, apparently due to the use of wx with pytohn3.X
         wx.DisableAsserts()

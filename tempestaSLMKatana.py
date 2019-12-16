@@ -23,7 +23,7 @@ def main():
 #         instruments.XYStage('COM20') as scanXY, \
 #         instruments.AOTF('COM18') as aotf:
 
-    katanalaser = instruments.KatanaLaser('COM99')
+    katanalaser = instruments.KatanaLaser('COM8')
     scanZ = instruments.ScanZ('COM4')
     scanXY = instruments.XYStage('COM6')
     aotf = instruments.AOTF('COM5')

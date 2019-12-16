@@ -50,19 +50,18 @@ class OneFiveLaser(SerialDriver):
 
     def initialize(self):
         super().initialize()
-        self.intensity_max = 3.2  # maximum power setting for the Katana
-        self.power_setting = 0  # To change power with python (1) or knob (0)
+        self.intensity_max = 3.1  # maximum power setting for the Katana
+        self.power_setting = 1  # To change power with python (1) or knob (0)
         self.mode = 0  # Constant current (1) or constant power (0) mode
-        self.triggerMode = 0  # Trigger=TTL input
+        self.triggerMode = 0  # Trigger: internal (0)
         self.enabled_state = 0  # Laser initially off (0)
         self.W = Q_(1, 'W')
         self.mW = Q_(1, 'mW')
         self.power_setpoint = 0  # Current laser power setpoint
-        self.power_sp = 0*self.mW
 
-#        self.setPowerSetting()  # Why is this needed?
         self.setPowerSetting(self.power_setting)
         self.setTriggerSource(self.triggerMode)
+        self.setMode(self.mode)
 
     @Feat
     def status(self):
@@ -90,14 +89,14 @@ class OneFiveLaser(SerialDriver):
     def power_sp(self):
         """Check laser power set point (mW)
         """
-        return float(self.query('lp?')) * self.W
+        return float(self.query('lp?')[3:]) * 1000
 
     @power_sp.setter
     def power_sp(self, value):
         """Handles output power.
         Sends a RS232 command to the laser specifying the new intensity.
         """
-        value = value.magnitude/1000  # Conversion from mW to W
+        value = value / 1000  # Conversion from mW to W
         if(self.power_setting != 1):
             print("Knob mode: impossible to change power value.")
             return
@@ -114,7 +113,7 @@ class OneFiveLaser(SerialDriver):
     def current_sp(self):
         """Check laser current
         """
-        return float(self.query('li?'))
+        return float(self.query('li?')[3:])
 
     @current_sp.setter
     def current_sp(self, value):
@@ -135,10 +134,10 @@ class OneFiveLaser(SerialDriver):
     # LASER'S CURRENT STATUS
 
     @property
-    def power(self):
+    def maxPower(self):
         """To get the maximum output power (mW)
         """
-        return self.intensity_max * 1000 * self.mW
+        return self.intensity_max * 1000
 
     def setPowerSetting(self, manual=1):
         """Power can be changed via this interface (1).
@@ -148,7 +147,7 @@ class OneFiveLaser(SerialDriver):
             print("setPowerSetting: invalid argument")
             self.power_setting = 0
         self.power_setting = manual
-        cmd = "lps" + str(manual)
+        cmd = "lps=" + str(manual)
         self.query(cmd)
 
     def setMode(self, value):
@@ -202,7 +201,7 @@ class OneFiveLaser(SerialDriver):
     def getPower(self):
         """Returns internally measured laser power
         """
-        return str(float(self.query('lpa?')))
+        return str(float(self.query('lpa?')[4:]))
 
     def getMode(self):
         """Returns mode of operation: constant current (1) or power (0)
@@ -219,11 +218,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Test Katana HRI')
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='Show interactive GUI')
-    parser.add_argument('-p', '--port', type=str, default='COMXX',
+    parser.add_argument('-p', '--port', type=str, default='COM8',
                         help='Serial port to connect to')
 
     args = parser.parse_args()
-    with OneFiveLaser('COM10') as inst:
+    with OneFiveLaser('COM8') as inst:
         if args.interactive:
             from lantz.ui.qtwidgets import start_test_app
             start_test_app(inst)
