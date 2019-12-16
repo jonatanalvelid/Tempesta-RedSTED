@@ -568,23 +568,23 @@ class ArrowsControl(QtGui.QFrame):
         self.arrow_layout = QtGui.QGridLayout()
         self.arrows.setLayout(self.arrow_layout)
 
-        self.upButton = QtGui.QPushButton('Up')
+        self.upButton = QtGui.QPushButton('Up (YZ)')
         self.upButton.setCheckable(False)
         self.upButton.setSizePolicy(QtGui.QSizePolicy.Preferred,
                                     QtGui.QSizePolicy.Expanding)
         self.upButton.setFixedSize(self.upButton.sizeHint())
 
-        self.downButton = QtGui.QPushButton('Down')
+        self.downButton = QtGui.QPushButton('Down (YZ)')
         self.downButton.setCheckable(False)
         self.downButton.setSizePolicy(QtGui.QSizePolicy.Preferred,
                                       QtGui.QSizePolicy.Expanding)
         self.downButton.setFixedSize(self.upButton.sizeHint())
 
-        self.leftButton = QtGui.QPushButton('Left')
+        self.leftButton = QtGui.QPushButton('Left (XZ)')
         self.leftButton.setCheckable(False)
         self.leftButton.setFixedSize(self.upButton.sizeHint())
 
-        self.rightButton = QtGui.QPushButton('Right')
+        self.rightButton = QtGui.QPushButton('Right (XZ)')
         self.rightButton.setCheckable(False)
         self.rightButton.setSizePolicy(QtGui.QSizePolicy.Preferred,
                                        QtGui.QSizePolicy.Expanding)
