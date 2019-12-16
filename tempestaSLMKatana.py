@@ -23,10 +23,11 @@ def main():
 #         instruments.XYStage('COM20') as scanXY, \
 #         instruments.AOTF('COM18') as aotf:
 
+    leicastand = instruments.LeicaStand('COM9')
     katanalaser = instruments.KatanaLaser('COM8')
-    scanZ = instruments.ScanZ('COM4')
+    scanZ = instruments.ScanZ('COM5')
     scanXY = instruments.XYStage('COM6')
-    aotf = instruments.AOTF('COM5')
+    aotf = instruments.AOTF('COM4')
 
     with instruments.SLM() as slm:
         
@@ -41,7 +42,7 @@ def main():
     
         win = control.TempestaSLMKatanaGUI(katanalaser, slm, scanZ, scanXY,
                                            webcamFocusLock, webcamWidefield,
-                                           aotf)
+                                           aotf, leicastand)
         win.show()
         app.exec_()
 

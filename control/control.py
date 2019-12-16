@@ -23,6 +23,7 @@ import control.tiling as tiling
 import control.timelapse as timelapse
 import control.slmWidget as slmWidget
 import control.guitools as guitools
+import control.motcorr as motcorr
 
 datapath = r"C:\\Users\\STEDred\Documents\defaultTempestaData"
 
@@ -48,7 +49,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
     liveviewEnds = QtCore.pyqtSignal()
 
     def __init__(self, stedlaser, slm, scanZ, scanXY, webcamFocusLock,
-                 webcamWidefield, aotf, *args, **kwargs):
+                 webcamWidefield, aotf, leicastand, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
 
@@ -58,6 +59,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         self.scanZ = scanZ
         self.aotf = aotf
         self.scanXY = scanXY
+        self.dmi8 = leicastand
         self.imspector = sp.Imspector()
 
         self.filewarning = FileWarning()
@@ -144,6 +146,12 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         self.timelapseWidget = timelapse.TimelapseWidget(self.imspector)
         timelapseDock.addWidget(self.timelapseWidget)
         dockArea.addDock(timelapseDock, "top", widefieldDock)
+        
+        # Objective mot_corr widget
+        motcorrDock = Dock("Glycerol motCORR", size=(500, 200))
+        self.MotcorrWidget = motcorr.MotcorrWidget(self.dmi8)
+        motcorrDock.addWidget(self.MotcorrWidget)
+        dockArea.addDock(motcorrDock, "below", timelapseDock)
         
         # XY-scanner tiling widget
         tilingDock = Dock("Tiling", size=(500, 200))

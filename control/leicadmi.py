@@ -7,12 +7,7 @@ Created on Mon Dec 16 11:58:00 2019
 
 """
 
-
-# import math
-# from pyvisa import constants
-
 from lantz import Action, Feat
-# from lantz.messagebased import MessageBasedDriver
 from lantz.drivers.legacy.serial import SerialDriver
 
 
@@ -20,21 +15,6 @@ class LeicaDMI(SerialDriver):
     """Driver for Leica DMi8 stand, mainly for controlling the z-drive and
     motorized correction collar.
     """
-
-#    DEFAULTS = {'ASRL': {'write_termination': '\r',
-#                         'read_termination': '\r',
-#                         'baud_rate': 19200,
-##                         'bytesize': 8,
-#                         'parity': constants.Parity.none,
-#                         'stop_bits': constants.StopBits.one,
-#                         'encoding': 'ascii',
-#                         }}
-
-    #TODO: add this in PyVISA
-    # flow control flags
-    #RTSCTS = False
-    #DSRDTR = False
-    #XONXOFF = False
 
     ENCODING = 'ascii'
 
@@ -88,6 +68,16 @@ class LeicaDMI(SerialDriver):
     def toFocus(self):
         """ Move Z-drive to the saved focus position. """
         self.query('71034')
+
+
+
+    # MOT_CORR-MOVEMENT
+    
+    @Action()
+    def motCorrPos(self, value):
+        """ Absolute mot_corr position movement. """
+        movetopos = int(round(value*93.83))
+        self.query('47022 -1 ' + str(movetopos))
 
 
 
@@ -155,12 +145,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Test Kentech HRI')
     parser.add_argument('-i', '--interactive', action='store_true',
                         default=False, help='Show interactive GUI')
-    parser.add_argument('-p', '--port', type=str, default='COM12',
+    parser.add_argument('-p', '--port', type=str, default='COM9',
                         help='Serial port to connect to')
 
     args = parser.parse_args()
 #    lantz.log.log_to_screen(lantz.log.DEBUG)
-    with LeicaZDrive('COM12') as inst:
+    with LeicaDMI('COM9') as inst:
         if args.interactive:
             from lantz.ui.qtwidgets import start_test_app
             start_test_app(inst)

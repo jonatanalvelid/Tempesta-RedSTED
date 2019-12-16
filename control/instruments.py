@@ -86,6 +86,24 @@ class AOTF(object):
         self.aotf.close()
 
 
+class LeicaStand(object):
+    def __new__(cls, *args):
+        try:
+            from control.leicadmi import LeicaDMI
+            leicastand = LeicaDMI(*args)
+            leicastand.initialize()
+            return leicastand
+        except:
+            print('Mock LeicaStand loaded')
+            return mockers.MockLeicaDMI()
+
+    def __enter__(self, *args, **kwargs):
+        return self.leicastand
+
+    def __exit__(self, *args, **kwargs):
+        self.leicastand.close()
+
+
 class ScanZ(object):
     def __new__(cls, *args):
         try:

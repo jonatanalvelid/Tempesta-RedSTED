@@ -264,7 +264,7 @@ class AOTFControl(QtGui.QFrame):
 
     def closeEvent(self, *args, **kwargs):
         super().closeEvent(*args, **kwargs)
-        
+
 
 if __name__ == '__main__':
     app = QtGui.QApplication([])

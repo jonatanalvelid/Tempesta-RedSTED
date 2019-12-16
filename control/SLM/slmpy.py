@@ -33,7 +33,7 @@ class ImageEvent(wx.PyCommandEvent):
 
 class SLMframe(wx.Frame):
     """Frame used to display full screen image."""
-    def __init__(self, monitor=1, isImageLock=True):
+    def __init__(self, monitor=2, isImageLock=True):
         self.isImageLock = isImageLock
         # Create the frame
         # wx.Frame.__init__(self,None,-1,'SLM window',pos = (self._x0, self._y0), size = (self._resX, self._resY))
