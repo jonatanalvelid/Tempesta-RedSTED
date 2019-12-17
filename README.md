@@ -3,7 +3,7 @@ The Tempesta (www.github.com/TestaLab/Tempesta) version used for the RedSTED, in
 
 This version of Tempesta is used to control the STED microscope built in the Testa Lab (www.testalab.org) at SciLifeLab in Stockholm, Sweden. It was adapted from the Tempesta used to control the MoNaLISA microscope developed in the lab, which in turn was adapted from the  custom-written microscope-control software Tormenta (www.github.com/fedebarabas/tormenta).
 
-It is modularly based, with custom-written drivers and code implementation for control of lasers, SLM, scanning stage, z-piezo, focus lock, widefield camera, tiling, AOMs, AOTFs, and the synchronization of all these parts. 
+It is modularly based, with custom-written drivers and code implementation for control of lasers, SLM, scanning stage, z-piezo, focus lock, widefield camera, tiling, AOMs, AOTFs, microscope stand, and the synchronization of all these parts. 
 A communication channel with microscope software Imspector (https://imspectordocs.readthedocs.io/) is also implemented. 
 
 Adaptation by:
