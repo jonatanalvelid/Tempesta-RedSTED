@@ -432,6 +432,7 @@ class SLMParamTreeAber(ParameterTree):
             {'name': 'D Oblique astigmatism', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
             {'name': 'D Vertical trefoil', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
             {'name': 'D Oblique trefoil', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'D Secondary spherical', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
             {'name': 'TH Tilt', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
             {'name': 'TH Tip', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
             {'name': 'TH Defocus', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
@@ -442,6 +443,7 @@ class SLMParamTreeAber(ParameterTree):
             {'name': 'TH Oblique astigmatism', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
             {'name': 'TH Vertical trefoil', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
             {'name': 'TH Oblique trefoil', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'TH Secondary spherical', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
             {'name': 'Apply', 'type': 'action'}
             ]
 
@@ -462,6 +464,7 @@ class SLMParamTreeAber(ParameterTree):
         f_d_obl_ast = self.p.param("D Oblique astigmatism").value()
         f_d_vert_trefoil = self.p.param("D Vertical trefoil").value()
         f_d_obl_trefoil = self.p.param("D Oblique trefoil").value()
+        f_d_sec_sph = self.p.param("D Secondary spherical").value()
 
         f_th_tilt = self.p.param("TH Tilt").value()
         f_th_tip = self.p.param("TH Tip").value()
@@ -473,11 +476,12 @@ class SLMParamTreeAber(ParameterTree):
         f_th_obl_ast = self.p.param("TH Oblique astigmatism").value()
         f_th_vert_trefoil = self.p.param("TH Vertical trefoil").value()
         f_th_obl_trefoil = self.p.param("TH Oblique trefoil").value()
+        f_th_sec_sph = self.p.param("TH Secondary spherical").value()
 
         d_aber_factors = np.array([f_d_tilt, f_d_tip, f_d_defoc, f_d_sph, f_d_vert_coma, f_d_hoz_coma,
-                                   f_d_vert_ast, f_d_obl_ast, f_d_vert_trefoil, f_d_obl_trefoil])
+                                   f_d_vert_ast, f_d_obl_ast, f_d_vert_trefoil, f_d_obl_trefoil, f_d_sec_sph])
         th_aber_factors = np.array([f_th_tilt, f_th_tip, f_th_defoc, f_th_sph, f_th_vert_coma, f_th_hoz_coma,
-                                    f_th_vert_ast, f_th_obl_ast, f_th_vert_trefoil, f_th_obl_trefoil])
+                                    f_th_vert_ast, f_th_obl_ast, f_th_vert_trefoil, f_th_obl_trefoil, f_th_sec_sph])
         return d_aber_factors, th_aber_factors
 
 

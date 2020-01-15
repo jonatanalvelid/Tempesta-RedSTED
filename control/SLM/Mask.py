@@ -174,7 +174,7 @@ class Mask(object):
         self.two_PiToUInt8()
         return
 
-    def aberrations(self, x=0, y=0, R=100, aberrationFactors=np.zeros(10)):
+    def aberrations(self, x=0, y=0, R=100, aberrationFactors=np.zeros(11)):
         """Create a mask with the aberrations"""
         self.img = pm.aberrationsMask(self.m, self.n, R, x, y, aberrationFactors)
         # Conversion into a uint8 image

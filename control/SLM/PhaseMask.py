@@ -123,6 +123,7 @@ def aberrationsMask(sizex, sizey, r, u, v, aberrationFactors):
     f_oblast = aberrationFactors[7]
     f_verttre = aberrationFactors[8]
     f_obltre = aberrationFactors[9]
+    f_secsph = aberrationFactors[10]
 
     circular_mask = (rho_glob <= r).astype(int)
     tilt_mask = f_tilt * 2 * rho_patt * np.sin(theta_patt)
@@ -135,10 +136,11 @@ def aberrationsMask(sizex, sizey, r, u, v, aberrationFactors):
     oblast_mask = f_oblast * np.sqrt(6) * rho_patt**2 * np.sin(2 * theta_patt)
     verttre_mask = f_verttre * np.sqrt(8) * rho_patt**3 * np.sin(3 * theta_patt)
     obltre_mask = f_obltre * np.sqrt(8) * rho_patt**3 * np.cos(3 * theta_patt)
+    sec_sph_mask = f_secsph * np.sqrt(7) * (20 * rho_patt**6 - 30 * rho_patt**4 + 12 * rho_patt**2 - 1)
 
     mask = np.multiply(circular_mask, tilt_mask + tip_mask + defoc_mask + sph_mask +
-                       vertcoma_mask + hozcoma_mask + vertast_mask +
-                       oblast_mask + verttre_mask + obltre_mask + math.pi)
+                       vertcoma_mask + hozcoma_mask + vertast_mask + oblast_mask +
+                       verttre_mask + obltre_mask + sec_sph_mask + math.pi)
     mask %= 2 * math.pi
     return mask
 

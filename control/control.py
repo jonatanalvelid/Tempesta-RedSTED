@@ -140,19 +140,19 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
                                              self.imspector)
         focusDock.addWidget(self.focusWidget)
         dockArea.addDock(focusDock, "below", widefieldDock)
-        
+
         # Timelapse widget
         timelapseDock = Dock("Timelapse", size=(500, 200))
         self.timelapseWidget = timelapse.TimelapseWidget(self.imspector)
         timelapseDock.addWidget(self.timelapseWidget)
         dockArea.addDock(timelapseDock, "top", widefieldDock)
-        
+
         # Objective mot_corr widget
         motcorrDock = Dock("Glycerol motCORR", size=(500, 200))
         self.MotcorrWidget = motcorr.MotcorrWidget(self.dmi8)
         motcorrDock.addWidget(self.MotcorrWidget)
         dockArea.addDock(motcorrDock, "below", timelapseDock)
-        
+
         # XY-scanner tiling widget
         tilingDock = Dock("Tiling", size=(500, 200))
         self.tilingWidget = tiling.TilingWidget(self.scanXY, self.focusWidget,
