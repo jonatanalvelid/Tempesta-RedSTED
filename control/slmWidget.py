@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import control.SLM.slmpy as slmpy
+from control.SLM import slmpy
 # import control.instruments as instruments
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
-import control.SLM.Mask as Mask
+from control.SLM import Mask
 from pyqtgraph.parametertree import Parameter, ParameterTree
+from pyqtgraph.dockarea import Dock, DockArea
 import pickle
 
 # Width and height of the SLM which can change from one device to another:
@@ -20,13 +21,14 @@ class slmWidget(QtGui.QFrame):
     independently. The whole image is separated in two: one left part and
     right part. One part is selected at a time and can be controlled with the
     arrows from *ArrowsControl*. :param SLMdisplay slm: instance of a second
-    monitor generatd via slmpy. Communication with the SLM is initiated when
-    Tempesta is started along with all other instruments"""
+    monitor generated via slmpy. Communication with the SLM is initiated when
+    Tempesta is started along with all other instruments."""
     def __init__(self, slm, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # Get the parameters from the tree
         self.tree = SLMParamTree()
+        self.treeAber = SLMParamTreeAber()
         self.RPar = self.tree.p.child("R")
         self.sigmaPar = self.tree.p.param("sigma")
         self.anglePar = self.tree.p.param("angle")
@@ -34,41 +36,7 @@ class slmWidget(QtGui.QFrame):
         self.helix_rotPar = self.tree.p.param("helix clock rotation")
 
         # Get the parameters from the tree - for aberrations for D and TH
-        self.treeAber = SLMParamTreeAber()
-        self.fDTilt = self.treeAber.p.param("D Tilt factor")
-        self.fDTip = self.treeAber.p.param("D Tip factor")
-        self.fDDefocPar = self.treeAber.p.param("D Defocus factor")
-        self.fDSphPar = self.treeAber.p.param("D Spherical factor")
-        self.fDVertComaPar = self.treeAber.p.param("D Vertical coma factor")
-        self.fDHozComaPar = self.treeAber.p.param("D Horizontal coma factor")
-        self.fDVertAstPar = self.treeAber.p.param("D Vertical astigmatism factor")
-        self.fDOblAstPar = self.treeAber.p.param("D Oblique astigmatism factor")
-
-        self.fTHTilt = self.treeAber.p.param("TH Tilt factor")
-        self.fTHTip = self.treeAber.p.param("TH Tip factor")
-        self.fTHDefocPar = self.treeAber.p.param("TH Defocus factor")
-        self.fTHSphPar = self.treeAber.p.param("TH Spherical factor")
-        self.fTHVertComaPar = self.treeAber.p.param("TH Vertical coma factor")
-        self.fTHHozComaPar = self.treeAber.p.param("TH Horizontal coma factor")
-        self.fTHVertAstPar = self.treeAber.p.param("TH Vertical astigmatism factor")
-        self.fTHOblAstPar = self.treeAber.p.param("TH Oblique astigmatism factor")
-
-        self.DaberrationFactors = np.array([self.fDTilt.value(),
-                                            self.fDTip.value(),
-                                            self.fDDefocPar.value(),
-                                            self.fDSphPar.value(),
-                                            self.fDVertComaPar.value(),
-                                            self.fDHozComaPar.value(),
-                                            self.fDVertAstPar.value(),
-                                            self.fDOblAstPar.value()])
-        self.THaberrationFactors = np.array([self.fTHTilt.value(),
-                                             self.fTHTip.value(),
-                                             self.fTHDefocPar.value(),
-                                             self.fTHSphPar.value(),
-                                             self.fTHVertComaPar.value(),
-                                             self.fTHHozComaPar.value(),
-                                             self.fTHVertAstPar.value(),
-                                             self.fTHOblAstPar.value()])
+        self.d_aber_factors, self.th_aber_factors = self.treeAber.get_aber_factors()
 
         self.slm = slm
         self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(),
@@ -77,8 +45,8 @@ class slmWidget(QtGui.QFrame):
         self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(),
                                          self.RPar.value(),
                                          self.sigmaPar.value(),
-                                         self.DaberrationFactors,
-                                         self.THaberrationFactors)
+                                         self.d_aber_factors,
+                                         self.th_aber_factors)
 
         self.maskMask.tilt(self.anglePar.value())
         self.mask = self.maskMask + self.maskAber
@@ -139,17 +107,29 @@ class slmWidget(QtGui.QFrame):
         # GUI layout
         grid = QtGui.QGridLayout()
         self.setLayout(grid)
-        grid.addWidget(imageWidget, 0, 0, 1, 2)
-        grid.addWidget(self.treeAber, 1, 0, 1, 1)
-        grid.addWidget(self.tree, 2, 0, 1, 1)
-        grid.addWidget(self.arrowsModule, 1, 1, 2, 1)
 
-        grid.setColumnMinimumWidth(1, 100)
-        grid.setColumnMinimumWidth(2, 40)
-        grid.setColumnMinimumWidth(0, 100)
-        grid.setRowMinimumHeight(0, 200)
-        grid.setRowMinimumHeight(1, 200)
-        grid.setRowMinimumHeight(2, 50)
+        # Dock widget
+        dock_area = DockArea()
+
+        # Laser Widget
+        paramtree_dock = Dock("Parameter tree", size=(400, 400))
+        paramtree_dock.addWidget(self.tree)
+        paramtree_aberr_dock = Dock("Parameter tree aberrations", size=(400, 400))
+        paramtree_aberr_dock.addWidget(self.treeAber)
+        dock_area.addDock(paramtree_dock)
+        dock_area.addDock(paramtree_aberr_dock, "above", paramtree_dock)
+
+        grid.addWidget(dock_area, 0, 0, 2, 2)
+        grid.addWidget(imageWidget, 0, 2, 1, 3)
+#        grid.addWidget(self.treeAber, 1, 0, 1, 1)
+#        grid.addWidget(self.tree, 2, 0, 1, 1)
+        grid.addWidget(self.arrowsModule, 1, 2, 1, 3)
+
+#        grid.setColumnMinimumWidth(1, 50)
+#        grid.setColumnMinimumWidth(0, 50)
+#        grid.setRowMinimumHeight(0, 200)
+#        grid.setRowMinimumHeight(1, 200)
+#        grid.setRowMinimumHeight(2, 50)
 
     def upClicked(self):
         """Moves the current Mask up"""
@@ -209,11 +189,6 @@ class slmWidget(QtGui.QFrame):
     def setGaussians(self):
         """Sets the current masks to Gaussian masks, with the same center.
         Useful for alignment."""
-        """
-        self.mask=Mask.Gaussians(m,n,self.lbdPar.value(),self.RPar.value(),self.sigmaPar.value());
-        self.mask.tilt(self.anglePar.value()
-        """
-        # self.loadParamGaussian()
         self.gaussiansBool = True
         self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(),
                                        self.RPar.value(),
@@ -222,7 +197,6 @@ class slmWidget(QtGui.QFrame):
                                        self.right_center)
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
-        # self.maskAber.update()
         self.update()
 
     def setHalf(self):
@@ -279,41 +253,7 @@ class slmWidget(QtGui.QFrame):
 
     def apply(self):
         """Applies a configuration to the SLM and changes the mask displayed"""
-
-        self.fDTilt = self.treeAber.p.param("D Tilt factor")
-        self.fDTip = self.treeAber.p.param("D Tip factor")
-        self.fDDefocPar = self.treeAber.p.param("D Defocus factor")
-        self.fDSphPar = self.treeAber.p.param("D Spherical factor")
-        self.fDVertComaPar = self.treeAber.p.param("D Vertical coma factor")
-        self.fDHozComaPar = self.treeAber.p.param("D Horizontal coma factor")
-        self.fDVertAstPar = self.treeAber.p.param("D Vertical astigmatism factor")
-        self.fDOblAstPar = self.treeAber.p.param("D Oblique astigmatism factor")
-
-        self.fTHTilt = self.treeAber.p.param("TH Tilt factor")
-        self.fTHTip = self.treeAber.p.param("TH Tip factor")
-        self.fTHDefocPar = self.treeAber.p.param("TH Defocus factor")
-        self.fTHSphPar = self.treeAber.p.param("TH Spherical factor")
-        self.fTHVertComaPar = self.treeAber.p.param("TH Vertical coma factor")
-        self.fTHHozComaPar = self.treeAber.p.param("TH Horizontal coma factor")
-        self.fTHVertAstPar = self.treeAber.p.param("TH Vertical astigmatism factor")
-        self.fTHOblAstPar = self.treeAber.p.param("TH Oblique astigmatism factor")
-
-        self.DaberrationFactors = np.array([self.fDTilt.value(),
-                                            self.fDTip.value(),
-                                            self.fDDefocPar.value(),
-                                            self.fDSphPar.value(),
-                                            self.fDVertComaPar.value(),
-                                            self.fDHozComaPar.value(),
-                                            self.fDVertAstPar.value(),
-                                            self.fDOblAstPar.value()])
-        self.THaberrationFactors = np.array([self.fTHTilt.value(),
-                                             self.fTHTip.value(),
-                                             self.fTHDefocPar.value(),
-                                             self.fTHSphPar.value(),
-                                             self.fTHVertComaPar.value(),
-                                             self.fTHHozComaPar.value(),
-                                             self.fTHVertAstPar.value(),
-                                             self.fTHOblAstPar.value()])
+        self.d_aber_factors, self.th_aber_factors = self.treeAber.get_aber_factors()
 
         if self.gaussiansBool:
             self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(),
@@ -332,8 +272,8 @@ class slmWidget(QtGui.QFrame):
         self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(),
                                          self.RPar.value(),
                                          self.sigmaPar.value(),
-                                         self.DaberrationFactors,
-                                         self.THaberrationFactors,
+                                         self.d_aber_factors,
+                                         self.th_aber_factors,
                                          self.left_center,
                                          self.right_center,
                                          self.helix_rotPar.value())
@@ -342,12 +282,14 @@ class slmWidget(QtGui.QFrame):
 
     def update(self):
         """When any parameter changes, sends the new image to the SLM and the
-        display"""
+        display."""
         # Changing the orientation of image so they have the same orientation
         # on the slm and on the screen
         self.left_center = self.maskMask.left_center
         self.right_center = self.maskMask.right_center
+        print('wait4')
         self.mask = self.maskMask + self.maskAber
+        print('wait5')
         image = self.mask.img.transpose()
         image = np.fliplr(image)
         self.img.setImage(image, autoLevels=False, autoDownsample=False)
@@ -360,7 +302,7 @@ class slmWidget(QtGui.QFrame):
         """Saves the current SLM configuration, in particular the position of
         the Masks. The informations are stored in a file 'informations.bbn'
         (arbitrary extension) with the module pickle. Separate files are
-        saved depending on if you use the glycerol or oil objective. """
+        saved depending on if you use the glycerol or oil objective."""
         state = self.tree.p.saveState()
         mask_state = {"left_center": self.maskMask.left_center,
                       "right_center": self.maskMask.right_center}
@@ -389,8 +331,8 @@ class slmWidget(QtGui.QFrame):
         return
 
     def loadParam(self):
-        """loads the parameters from a previous configuration. Depending on
-        which objective is in use, load different parameter files. """
+        """Loads the parameters from a previous configuration. Depending on
+        which objective is in use, load different parameter files."""
         self.gaussiansBool = False
 
         if(str(self.arrowsModule.objlensMenu.currentText()) == "Oil"):
@@ -416,41 +358,7 @@ class slmWidget(QtGui.QFrame):
         self.tree.p.restoreState(state)
         print("Load mask centers:", mask_state)
         self.treeAber.p.restoreState(stateAber)
-
-        self.fDTilt = self.treeAber.p.param("D Tilt factor")
-        self.fDTip = self.treeAber.p.param("D Tip factor")
-        self.fDDefocPar = self.treeAber.p.param("D Defocus factor")
-        self.fDSphPar = self.treeAber.p.param("D Spherical factor")
-        self.fDVertComaPar = self.treeAber.p.param("D Vertical coma factor")
-        self.fDHozComaPar = self.treeAber.p.param("D Horizontal coma factor")
-        self.fDVertAstPar = self.treeAber.p.param("D Vertical astigmatism factor")
-        self.fDOblAstPar = self.treeAber.p.param("D Oblique astigmatism factor")
-
-        self.fTHTilt = self.treeAber.p.param("TH Tilt factor")
-        self.fTHTip = self.treeAber.p.param("TH Tip factor")
-        self.fTHDefocPar = self.treeAber.p.param("TH Defocus factor")
-        self.fTHSphPar = self.treeAber.p.param("TH Spherical factor")
-        self.fTHVertComaPar = self.treeAber.p.param("TH Vertical coma factor")
-        self.fTHHozComaPar = self.treeAber.p.param("TH Horizontal coma factor")
-        self.fTHVertAstPar = self.treeAber.p.param("TH Vertical astigmatism factor")
-        self.fTHOblAstPar = self.treeAber.p.param("TH Oblique astigmatism factor")
-
-        self.DaberrationFactors = np.array([self.fDTilt.value(),
-                                            self.fDTip.value(),
-                                            self.fDDefocPar.value(),
-                                            self.fDSphPar.value(),
-                                            self.fDVertComaPar.value(),
-                                            self.fDHozComaPar.value(),
-                                            self.fDVertAstPar.value(),
-                                            self.fDOblAstPar.value()])
-        self.THaberrationFactors = np.array([self.fTHTilt.value(),
-                                             self.fTHTip.value(),
-                                             self.fTHDefocPar.value(),
-                                             self.fTHSphPar.value(),
-                                             self.fTHVertComaPar.value(),
-                                             self.fTHHozComaPar.value(),
-                                             self.fTHVertAstPar.value(),
-                                             self.fTHOblAstPar.value()])
+        self.d_aber_factors, self.th_aber_factors = self.treeAber.get_aber_factors()
 
         self.left_center = mask_state["left_center"]
         self.right_center = mask_state["right_center"]
@@ -464,10 +372,11 @@ class slmWidget(QtGui.QFrame):
         self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(),
                                          self.RPar.value(),
                                          self.sigmaPar.value(),
-                                         self.DaberrationFactors,
-                                         self.THaberrationFactors,
+                                         self.d_aber_factors,
+                                         self.th_aber_factors,
                                          left_pos=self.left_center,
                                          right_pos=self.right_center)
+        print('wait')
         self.update()
         print("Loaded all parameters.")
 
@@ -475,7 +384,7 @@ class slmWidget(QtGui.QFrame):
 class SLMParamTree(ParameterTree):
     """ Parameter Tree containing the different parameters for the SLM's
     phase masks. These parameters are:
-    Radius (int): of circular phase masks, in pixels
+    R (int): radius of circular phase masks, in pixels
     sigma (float): std of the incident gaussian beam, to determine the inner
                     radius of a top-hat phase mask, in pixels.
     angle (float): in an off-axis configuration.
@@ -511,30 +420,65 @@ class SLMParamTreeAber(ParameterTree):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        lim = 2
         params = [
-                  {'name': 'D Tilt factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'D Tip factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'D Defocus factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'D Spherical factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'D Vertical coma factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'D Horizontal coma factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'D Vertical astigmatism factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'D Oblique astigmatism factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'TH Tilt factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'TH Tip factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'TH Defocus factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'TH Spherical factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'TH Vertical coma factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'TH Horizontal coma factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'TH Vertical astigmatism factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'TH Oblique astigmatism factor', 'type': 'float', 'value': 0, 'limits': (-3, 3)},
-                  {'name': 'Apply', 'type': 'action'}
-                  ]
+            {'name': 'D Tilt', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'D Tip', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'D Defocus', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'D Spherical', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'D Vertical coma', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'D Horizontal coma', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'D Vertical astigmatism', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'D Oblique astigmatism', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'D Vertical trefoil', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'D Oblique trefoil', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'TH Tilt', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'TH Tip', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'TH Defocus', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'TH Spherical', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'TH Vertical coma', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'TH Horizontal coma', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'TH Vertical astigmatism', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'TH Oblique astigmatism', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'TH Vertical trefoil', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'TH Oblique trefoil', 'type': 'float', 'value': 0, 'limits': (-lim, lim)},
+            {'name': 'Apply', 'type': 'action'}
+            ]
 
         self.p = Parameter.create(name='params', type='group', children=params)
         self.setParameters(self.p, showTop=False)
         self._writable = True
+
+    def get_aber_factors(self):
+        """Returns the aberration factors in the aberration tree to two np.arrays."""
+        # pylint: disable-msg=too-many-locals
+        f_d_tilt = self.p.param("D Tilt").value()
+        f_d_tip = self.p.param("D Tip").value()
+        f_d_defoc = self.p.param("D Defocus").value()
+        f_d_sph = self.p.param("D Spherical").value()
+        f_d_vert_coma = self.p.param("D Vertical coma").value()
+        f_d_hoz_coma = self.p.param("D Horizontal coma").value()
+        f_d_vert_ast = self.p.param("D Vertical astigmatism").value()
+        f_d_obl_ast = self.p.param("D Oblique astigmatism").value()
+        f_d_vert_trefoil = self.p.param("D Vertical trefoil").value()
+        f_d_obl_trefoil = self.p.param("D Oblique trefoil").value()
+
+        f_th_tilt = self.p.param("TH Tilt").value()
+        f_th_tip = self.p.param("TH Tip").value()
+        f_th_defoc = self.p.param("TH Defocus").value()
+        f_th_sph = self.p.param("TH Spherical").value()
+        f_th_vert_coma = self.p.param("TH Vertical coma").value()
+        f_th_hoz_coma = self.p.param("TH Horizontal coma").value()
+        f_th_vert_ast = self.p.param("TH Vertical astigmatism").value()
+        f_th_obl_ast = self.p.param("TH Oblique astigmatism").value()
+        f_th_vert_trefoil = self.p.param("TH Vertical trefoil").value()
+        f_th_obl_trefoil = self.p.param("TH Oblique trefoil").value()
+
+        d_aber_factors = np.array([f_d_tilt, f_d_tip, f_d_defoc, f_d_sph, f_d_vert_coma, f_d_hoz_coma,
+                                   f_d_vert_ast, f_d_obl_ast, f_d_vert_trefoil, f_d_obl_trefoil])
+        th_aber_factors = np.array([f_th_tilt, f_th_tip, f_th_defoc, f_th_sph, f_th_vert_coma, f_th_hoz_coma,
+                                    f_th_vert_ast, f_th_obl_ast, f_th_vert_trefoil, f_th_obl_trefoil])
+        return d_aber_factors, th_aber_factors
 
 
 class ArrowsControl(QtGui.QFrame):
@@ -560,8 +504,8 @@ class ArrowsControl(QtGui.QFrame):
         self.objlensMenu.addItem("No objective")
         self.objlensMenu.addItem("Oil")
         self.objlensMenu.addItem("Glycerol")
-        self.chooseInterface_layout.addWidget(QtGui.QLabel('Select which objective is used:'), 0, 2)
-        self.chooseInterface_layout.addWidget(self.objlensMenu, 0, 3)
+        self.chooseInterface_layout.addWidget(QtGui.QLabel('Select which objective is used:'), 1, 0)
+        self.chooseInterface_layout.addWidget(self.objlensMenu, 1, 1)
 
         # Defining the part with only the arrows themselves
         self.arrows = QtGui.QFrame()
@@ -627,20 +571,20 @@ class ArrowsControl(QtGui.QFrame):
         self.arrow_layout.addWidget(self.incrementWidget, 2, 1)
 
         self.arrow_layout.addWidget(self.saveButton, 4, 0)
-        self.arrow_layout.addWidget(self.loadButton, 5, 0)
+        self.arrow_layout.addWidget(self.loadButton, 4, 1)
         self.arrow_layout.addWidget(self.blackButton, 4, 2)
-        self.arrow_layout.addWidget(self.gaussiansButton, 5, 2)
+        self.arrow_layout.addWidget(self.gaussiansButton, 4, 3)
 
-        self.arrow_layout.addWidget(self.halfButton, 6, 0)
-        self.arrow_layout.addWidget(self.quadrantButton, 7, 0)
-        self.arrow_layout.addWidget(self.hexButton, 6, 2)
-        self.arrow_layout.addWidget(self.splitbullButton, 7, 2)
+        self.arrow_layout.addWidget(self.halfButton, 5, 0)
+        self.arrow_layout.addWidget(self.quadrantButton, 5, 1)
+        self.arrow_layout.addWidget(self.hexButton, 5, 2)
+        self.arrow_layout.addWidget(self.splitbullButton, 5, 3)
 
-        self.arrow_layout.addWidget(self.rotAngLabel, 8, 1)
-        self.arrow_layout.addWidget(self.rotAngEdit, 9, 1)
+        self.arrow_layout.addWidget(self.rotAngLabel, 6, 0)
+        self.arrow_layout.addWidget(self.rotAngEdit, 7, 0)
 
-        self.arrow_layout.addWidget(self.leftPatternBox, 10, 0)
-        self.arrow_layout.addWidget(self.rightPatternBox, 10, 2)
+        self.arrow_layout.addWidget(self.leftPatternBox, 6, 2)
+        self.arrow_layout.addWidget(self.rightPatternBox, 7, 2)
 
         # Definition of the global layout:
         self.layout = QtGui.QVBoxLayout()

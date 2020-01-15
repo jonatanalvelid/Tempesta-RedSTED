@@ -12,20 +12,20 @@ import time
 # Scientific python packages and software imports
 from pyqtgraph.Qt import QtCore, QtGui
 from pyqtgraph.dockarea import Dock, DockArea
-from lantz import Q_
+#from lantz import Q_
 import specpy as sp
 
 # Tempesta control imports
-import control.LaserWidget as LaserWidget
-import control.focus as focus
-import control.widefield as widefield
-import control.tiling as tiling
-import control.timelapse as timelapse
-import control.slmWidget as slmWidget
-import control.guitools as guitools
-import control.motcorr as motcorr
+from control import LaserWidget
+from control import focus
+from control import widefield
+from control import tiling
+from control import timelapse
+from control import slmWidget
+from control import guitools
+from control import motcorr
 
-datapath = r"C:\\Users\\STEDred\Documents\defaultTempestaData"
+DATAPATH = r"C:\\Users\\STEDred\\Documents\\defaultTempestaData\\"
 
 
 class FileWarning(QtGui.QMessageBox):
@@ -64,7 +64,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
 
         self.filewarning = FileWarning()
 
-        self.s = Q_(1, 's')
+        #self.s = Q_(1, 's')
         self.lastTime = time.clock()
         self.fps = None
 
@@ -103,7 +103,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
 
         # Potentially remove all this?
         self.presetsMenu = QtGui.QComboBox()
-        self.presetDir = datapath
+        self.presetDir = DATAPATH
         if not(os.path.isdir(self.presetDir)):
             self.presetDir = os.path.join(os.getcwd(), 'control\\Presets')
         for preset in os.listdir(self.presetDir):

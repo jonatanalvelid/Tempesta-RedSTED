@@ -2,7 +2,7 @@
 
 # import time
 from PyQt4 import QtCore
-from lantz import Q_
+#from lantz import Q_
 from pyqtgraph.Qt import QtGui
 import control.instruments as instruments
 import math

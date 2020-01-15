@@ -89,6 +89,7 @@ class MockKatanaLaser(object):
         self.info = None
         self.power_setting = 0  # To change the power with python
         self.intensity_max = intensity_max
+        self.maxPower = self.intensity_max
         self.mode = 0  # Constant current or Power
         self.triggerMode = 0  # Trigger=TTL input
         self.enabled_state = False  # Laser initially off
@@ -269,6 +270,36 @@ class MockLeicaZDrive(object):
         pass
 
 
+class MockLeicaDMI(object):
+
+    def __init__(self, SerialDriver=0):
+        super().__init__()
+        print('Simulated Leica DMI')
+
+    def close(self):
+        pass
+
+    @Feat()
+    def absZ(self):
+        """ Absolute Z position. """
+        pass
+
+    @absZ.setter
+    def absZ(self, value):
+        """ Absolute Z position movement. """
+        pass
+
+    @Feat()
+    def relZ(self):
+        """ Absolute Z position. """
+        pass
+
+    @relZ.setter
+    def relZ(self, value):
+        """ Relative Z position movement. """
+        pass
+
+
 class MockPCZPiezo(object):
 
     def __init__(self, SerialDriver=0):
@@ -410,6 +441,29 @@ class MockWebcam(object):
 #        return pygame.surfarray.make_surface(arr)
 
     def stop(self):
+        pass
+
+
+class MockCameraTIS(object):
+
+    def __init__(self):
+        super().__init__()
+        print('Simulated Webcam')
+
+    def grab_image(self):
+        arr = (100 * np.random.rand(1024, 1280)).astype(np.float)
+        return arr
+
+    def setPropertyValue(self):
+        pass
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
+
+    def show_dialog(self):
         pass
 
 

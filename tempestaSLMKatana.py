@@ -10,7 +10,7 @@ from pyqtgraph.Qt import QtGui
 def main():
 
     from control import control
-    import control.instruments as instruments
+    from control import instruments
 
     app = QtGui.QApplication([])
 
