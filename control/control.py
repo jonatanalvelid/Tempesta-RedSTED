@@ -7,7 +7,7 @@ Created on Mon Jan 23 15:21:07 2017
 
 # General imports
 import os
-import time
+#import time
 
 # Scientific python packages and software imports
 from pyqtgraph.Qt import QtCore, QtGui
@@ -16,16 +16,9 @@ from lantz import Q_
 import specpy as sp
 
 # Tempesta control imports
-import control.LaserWidget as LaserWidget
-import control.focus as focus
-import control.widefield as widefield
-import control.tiling as tiling
-import control.timelapse as timelapse
-import control.slmWidget as slmWidget
-import control.guitools as guitools
-import control.motcorr as motcorr
+from control import LaserWidget, focus, widefield, tiling, timelapse, slmWidget, guitools, motcorr
 
-datapath = r"C:\\Users\\STEDred\Documents\defaultTempestaData"
+#DATAPATH = r"C:\\Users\\STEDred\Documents\defaultTempestaData"
 
 
 class FileWarning(QtGui.QMessageBox):
@@ -56,109 +49,110 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         # os.chdir('C:\\Users\\STEDred\Documents\TempestaSnapshots')
 
         self.slm = slm
-        self.scanZ = scanZ
+        self.scan_z = scanZ
         self.aotf = aotf
-        self.scanXY = scanXY
+        self.scan_xy = scanXY
         self.dmi8 = leicastand
         self.imspector = sp.Imspector()
 
         self.filewarning = FileWarning()
 
-        self.s = Q_(1, 's')
-        self.lastTime = time.clock()
+#        self.s = Q_(1, 's')
+#        self.lastTime = time.clock()
         self.fps = None
 
-        # Actions in menubar
-        menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
+#        # Potentially remove all this?
+#        # Actions in menubar
+#        menubar = self.menuBar()
+#        file_menu = menubar.addMenu('&File')
+#
+#        self.savePresetAction = QtGui.QAction('Save configuration...', self)
+#        self.savePresetAction.setShortcut('Ctrl+S')
+#        self.savePresetAction.setStatusTip('Save camera & recording settings')
+#        savePresetFunction = lambda: guitools.savePreset(self)
+#        self.savePresetAction.triggered.connect(savePresetFunction)
+#        file_menu.addAction(self.savePresetAction)
+#        file_menu.addSeparator()
+#
+#        self.exportTiffAction = QtGui.QAction('Export HDF5 to Tiff...', self)
+#        self.exportTiffAction.setShortcut('Ctrl+E')
+#        self.exportTiffAction.setStatusTip('Export HDF5 file to Tiff format')
+#        self.exportTiffAction.triggered.connect(guitools.TiffConverterThread)
+#        file_menu.addAction(self.exportTiffAction)
+#
+#        self.exportlastAction = QtGui.QAction('Export last recording to Tiff',
+#                                             self)
+#        self.exportlastAction.setEnabled(False)
+#        self.exportlastAction.setShortcut('Ctrl+L')
+#        self.exportlastAction.setStatusTip('Export last recording to Tiff ' +
+#                                           'format')
+#        file_menu.addAction(self.exportlastAction)
+#        file_menu.addSeparator()
+#
+#        exit_action = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
+#        exit_action.setShortcut('Ctrl+Q')
+#        exit_action.setStatusTip('Exit application')
+#        exit_action.triggered.connect(QtGui.QApplication.closeAllWindows)
+#       file_menu.addAction(exit_action)
 
-        self.savePresetAction = QtGui.QAction('Save configuration...', self)
-        self.savePresetAction.setShortcut('Ctrl+S')
-        self.savePresetAction.setStatusTip('Save camera & recording settings')
-        savePresetFunction = lambda: guitools.savePreset(self)
-        self.savePresetAction.triggered.connect(savePresetFunction)
-        fileMenu.addAction(self.savePresetAction)
-        fileMenu.addSeparator()
-
-        self.exportTiffAction = QtGui.QAction('Export HDF5 to Tiff...', self)
-        self.exportTiffAction.setShortcut('Ctrl+E')
-        self.exportTiffAction.setStatusTip('Export HDF5 file to Tiff format')
-        self.exportTiffAction.triggered.connect(guitools.TiffConverterThread)
-        fileMenu.addAction(self.exportTiffAction)
-
-        self.exportlastAction = QtGui.QAction('Export last recording to Tiff',
-                                              self)
-        self.exportlastAction.setEnabled(False)
-        self.exportlastAction.setShortcut('Ctrl+L')
-        self.exportlastAction.setStatusTip('Export last recording to Tiff ' +
-                                           'format')
-        fileMenu.addAction(self.exportlastAction)
-        fileMenu.addSeparator()
-
-        exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
-        exitAction.setShortcut('Ctrl+Q')
-        exitAction.setStatusTip('Exit application')
-        exitAction.triggered.connect(QtGui.QApplication.closeAllWindows)
-        fileMenu.addAction(exitAction)
-
-        # Potentially remove all this?
-        self.presetsMenu = QtGui.QComboBox()
-        self.presetDir = datapath
-        if not(os.path.isdir(self.presetDir)):
-            self.presetDir = os.path.join(os.getcwd(), 'control\\Presets')
-        for preset in os.listdir(self.presetDir):
-            self.presetsMenu.addItem(preset)
-        self.loadPresetButton = QtGui.QPushButton('Load preset')
-        loadPresetFunction = lambda: guitools.loadPreset(self)
-        self.loadPresetButton.pressed.connect(loadPresetFunction)
+#        # Potentially remove all this?
+#        self.presetsMenu = QtGui.QComboBox()
+#        self.presetDir = DATAPATH
+#        if not(os.path.isdir(self.presetDir)):
+#            self.presetDir = os.path.join(os.getcwd(), 'control\\Presets')
+#        for preset in os.listdir(self.presetDir):
+#            self.presetsMenu.addItem(preset)
+#        self.loadPresetButton = QtGui.QPushButton('Load preset')
+#        loadPresetFunction = lambda: guitools.loadPreset(self)
+#        self.loadPresetButton.pressed.connect(loadPresetFunction)
 
         # Dock widget
-        dockArea = DockArea()
+        dock_area = DockArea()
 
         # Laser Widget
-        laserDock = Dock("Laser Control", size=(400, 500))
+        laser_dock = Dock("Laser Control", size=(400, 500))
         self.lasers = stedlaser
-        self.laserWidgets = LaserWidget.LaserWidget(self.lasers, self.aotf)
-        laserDock.addWidget(self.laserWidgets)
-        dockArea.addDock(laserDock, 'right')
+        self.laser_widgets = LaserWidget.LaserWidget(self.lasers, self.aotf)
+        laser_dock.addWidget(self.laser_widgets)
+        dock_area.addDock(laser_dock, 'right')
 
         # SLM widget
-        slmDock = Dock("SLM", size=(400, 300))
-        self.slmWidget = slmWidget.slmWidget(self.slm)
-        slmDock.addWidget(self.slmWidget)
-        dockArea.addDock(slmDock, "bottom", laserDock)
+        slm_dock = Dock("SLM", size=(400, 300))
+        self.slm_widget = slmWidget.slmWidget(self.slm)
+        slm_dock.addWidget(self.slm_widget)
+        dock_area.addDock(slm_dock, "bottom", laser_dock)
 
         # Widefield camera widget
-        widefieldDock = Dock("Widefield", size=(500, 500))
-        self.widefieldWidget = widefield.WidefieldWidget(webcamWidefield)
-        widefieldDock.addWidget(self.widefieldWidget)
-        dockArea.addDock(widefieldDock, "left")
+        widefield_dock = Dock("Widefield", size=(500, 500))
+        self.widefield_widget = widefield.WidefieldWidget(webcamWidefield)
+        widefield_dock.addWidget(self.widefield_widget)
+        dock_area.addDock(widefield_dock, "left")
 
         # Focus lock widget
-        focusDock = Dock("Focus lock", size=(500, 500))
-        self.focusWidget = focus.FocusWidget(self.scanZ, webcamFocusLock,
-                                             self.imspector)
-        focusDock.addWidget(self.focusWidget)
-        dockArea.addDock(focusDock, "below", widefieldDock)
-        
+        focus_dock = Dock("Focus lock", size=(500, 500))
+        self.focus_widget = focus.FocusWidget(self.scan_z, webcamFocusLock,
+                                              self.imspector)
+        focus_dock.addWidget(self.focus_widget)
+        dock_area.addDock(focus_dock, "below", widefield_dock)
+
         # Timelapse widget
-        timelapseDock = Dock("Timelapse", size=(500, 200))
-        self.timelapseWidget = timelapse.TimelapseWidget(self.imspector)
-        timelapseDock.addWidget(self.timelapseWidget)
-        dockArea.addDock(timelapseDock, "top", widefieldDock)
-        
+        timelapse_dock = Dock("Timelapse", size=(500, 200))
+        self.timelapse_widget = timelapse.TimelapseWidget(self.imspector)
+        timelapse_dock.addWidget(self.timelapse_widget)
+        dock_area.addDock(timelapse_dock, "top", widefield_dock)
+
         # Objective mot_corr widget
-        motcorrDock = Dock("Glycerol motCORR", size=(500, 200))
-        self.MotcorrWidget = motcorr.MotcorrWidget(self.dmi8)
-        motcorrDock.addWidget(self.MotcorrWidget)
-        dockArea.addDock(motcorrDock, "below", timelapseDock)
-        
+        motcorr_dock = Dock("Glycerol motCORR", size=(500, 200))
+        self.motcorr_widget = motcorr.MotcorrWidget(self.dmi8)
+        motcorr_dock.addWidget(self.motcorr_widget)
+        dock_area.addDock(motcorr_dock, "below", timelapse_dock)
+
         # XY-scanner tiling widget
-        tilingDock = Dock("Tiling", size=(500, 200))
-        self.tilingWidget = tiling.TilingWidget(self.scanXY, self.focusWidget,
-                                                self.imspector)
-        tilingDock.addWidget(self.tilingWidget)
-        dockArea.addDock(tilingDock, "below", timelapseDock)
+        tiling_dock = Dock("Tiling", size=(500, 200))
+        self.tiling_widget = tiling.TilingWidget(self.scan_xy, self.focusWidget,
+                                                 self.imspector)
+        tiling_dock.addWidget(self.tiling_widget)
+        dock_area.addDock(tiling_dock, "below", timelapse_dock)
 
 
         self.setWindowTitle('Tempesta - RedSTED edition')
@@ -168,19 +162,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         # Widgets' layout
         layout = QtGui.QGridLayout()
         self.cwidget.setLayout(layout)
-#        layout.setColumnMinimumWidth(0, 100)
-#        layout.setColumnMinimumWidth(1, 350)
-#        layout.setColumnMinimumWidth(2, 150)
-#        layout.setColumnMinimumWidth(3, 200)
-#        layout.setRowMinimumHeight(0, 350)
-#        layout.setRowMinimumHeight(1, 350)
-#        layout.setRowMinimumHeight(2, 350)
-#        layout.setRowMinimumHeight(3, 30)
-        layout.addWidget(dockArea, 0, 3, 5, 1)
-#        layout.addWidget(self.scanxyWidget,0, 2, 5, 1)
-
-#        layout.setRowMinimumHeight(2, 40)
-#        layout.setColumnMinimumWidth(2, 1000)
+        layout.addWidget(dock_area, 0, 3, 5, 1)
 
     def closeEvent(self, *args, **kwargs):
         """closes the different devices. Resets the NiDaq card,

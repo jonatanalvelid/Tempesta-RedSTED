@@ -12,6 +12,6 @@ and Tormenta (https://github.com/fedebarabas/tormenta)
 @author: STEDred, jonatanalvelid, aurelien.barbotin
 """
 
-from tempestaSLMKatana import main
+from tempesta_redSTED import main
 
 main()

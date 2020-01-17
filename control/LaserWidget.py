@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Mon Jan 23 15:21:07 2017
+
+@author: STEDred, jonatanalvelid, aurelien.barbotin
+"""
 
 # import time
-from PyQt4 import QtCore
-from lantz import Q_
-from pyqtgraph.Qt import QtGui
-import control.instruments as instruments
 import math
+from PyQt4 import QtCore
+#from lantz import Q_
+from pyqtgraph.Qt import QtGui
+from control import instruments
 
 
 class LaserWidget(QtGui.QFrame):
@@ -75,19 +80,19 @@ class LaserControl(QtGui.QFrame):
         self.name = QtGui.QLabel(name)
         self.name.setTextFormat(QtCore.Qt.RichText)
         self.name.setAlignment(QtCore.Qt.AlignCenter)
-        self.powerIndicator = QtGui.QLineEdit('Max: ' + str(self.laser.maxPower) + ' mW')
-        self.powerIndicator.setReadOnly(True)
-        self.powerIndicator.setFixedWidth(100)
-        self.setPointEdit = QtGui.QLineEdit(str(round(self.laser.power_sp, 3)))
-        self.setPointEdit.setFixedWidth(100)
-        self.enableButton = QtGui.QPushButton('ON')
-        self.enableButton.setFixedWidth(100)
+        self.power_indicator = QtGui.QLineEdit('Max: ' + str(self.laser.maxPower) + ' mW')
+        self.power_indicator.setReadOnly(True)
+        self.power_indicator.setFixedWidth(100)
+        self.set_point_edit = QtGui.QLineEdit(str(round(self.laser.power_sp, 3)))
+        self.set_point_edit.setFixedWidth(100)
+        self.enable_button = QtGui.QPushButton('ON')
+        self.enable_button.setFixedWidth(100)
         style = "background-color: rgb{}".format(color)
-        self.enableButton.setStyleSheet(style)
-        self.enableButton.setCheckable(True)
+        self.enable_button.setStyleSheet(style)
+        self.enable_button.setCheckable(True)
         self.name.setStyleSheet(style)
         if self.laser.enabled:
-            self.enableButton.setChecked(True)
+            self.enable_button.setChecked(True)
         if(prange is None):
             prange = (0, self.laser.maxPower)
 #            prange = (0, 3200)
@@ -107,9 +112,9 @@ class LaserControl(QtGui.QFrame):
         grid = QtGui.QGridLayout()
         self.setLayout(grid)
         grid.addWidget(self.name, 0, 0)
-        grid.addWidget(self.powerIndicator, 3, 0)
-        grid.addWidget(self.setPointEdit, 4, 0)
-        grid.addWidget(self.enableButton, 5, 0)
+        grid.addWidget(self.power_indicator, 3, 0)
+        grid.addWidget(self.set_point_edit, 4, 0)
+        grid.addWidget(self.enable_button, 5, 0)
         grid.addWidget(self.maxpower, 1, 1)
         grid.addWidget(self.slider, 2, 1, 5, 1)
         grid.addWidget(self.minpower, 7, 1)
@@ -117,39 +122,31 @@ class LaserControl(QtGui.QFrame):
         grid.setRowMinimumHeight(6, 60)
 
         # Connections
-        self.enableButton.toggled.connect(self.toggleLaser)
+        self.enable_button.toggled.connect(self.toggleLaser)
         self.slider.valueChanged[int].connect(self.changeSlider)
-        self.setPointEdit.returnPressed.connect(self.changeEdit)
+        self.set_point_edit.returnPressed.connect(self.changeEdit)
 
     def toggleLaser(self):
-        if self.enableButton.isChecked():
+        if self.enable_button.isChecked():
             self.laser.enabled = True
         else:
             self.laser.enabled = False
 
-    def digitalMod(self):
-        if self.digimodButton.isChecked():
-            self.laser.digital_mod = True
-            self.laser.enter_mod_mode()
-            print(self.laser.mod_mode)
-        else:
-            self.laser.query('cp')
-
     def enableLaser(self):
         """Turns on the laser and sets its power to the value specified by the textbox."""
         self.laser.enabled = 1
-        self.laser.power_sp = int(self.setPointEdit.text())
+        self.laser.power_sp = int(self.set_point_edit.text())
 
     def changeSlider(self, value):
         """Called when the slider is moved, changes the power of the laser.
         """
         self.laser.power_sp = int(self.slider.value())
-        self.setPointEdit.setText(str(self.laser.power_sp))
+        self.set_point_edit.setText(str(self.laser.power_sp))
 
     def changeEdit(self):
         """called when the user manually changes the intensity value of the laser.
         Sets the laser power to the corresponding value"""
-        self.laser.power_sp = int(self.setPointEdit.text())
+        self.laser.power_sp = int(self.set_point_edit.text())
         self.slider.setValue(self.laser.power_sp)
 
     def closeEvent(self, *args, **kwargs):
@@ -160,6 +157,10 @@ class AOTFControl(QtGui.QFrame):
     """Controls one specific laser with the aotf and associates it with a
     specific layout: a slider and a text box to edit the Laser Power,
     and a switch on/off button."""
+
+    # pylint: disable=too-many-instance-attributes
+    # More is reasonable in this case.
+
     def __init__(self, aotf, name, color, tickInterval, singleStep, channel,
                  prange=None, daq=None, port=None, invert=True, modulable=True,
                  *args, **kwargs):
@@ -177,19 +178,19 @@ class AOTFControl(QtGui.QFrame):
         self.name = QtGui.QLabel(name)
         self.name.setTextFormat(QtCore.Qt.RichText)
         self.name.setAlignment(QtCore.Qt.AlignCenter)
-        if channel==1:
-            self.powerIndicator = QtGui.QLineEdit('Max: 21 uW')
-        elif channel==2:
-            self.powerIndicator = QtGui.QLineEdit('Max: 124 uW')
-        self.powerIndicator.setReadOnly(True)
-        self.powerIndicator.setFixedWidth(100)
-        self.setPointEdit = QtGui.QLineEdit(str(0))
-        self.setPointEdit.setFixedWidth(100)
-        self.enableButton = QtGui.QPushButton('ON')
-        self.enableButton.setFixedWidth(100)
+        if channel == 1:
+            self.power_indicator = QtGui.QLineEdit('Max: 21 uW')
+        elif channel == 2:
+            self.power_indicator = QtGui.QLineEdit('Max: 124 uW')
+        self.power_indicator.setReadOnly(True)
+        self.power_indicator.setFixedWidth(100)
+        self.set_point_edit = QtGui.QLineEdit(str(0))
+        self.set_point_edit.setFixedWidth(100)
+        self.enable_button = QtGui.QPushButton('ON')
+        self.enable_button.setFixedWidth(100)
         style = "background-color: rgb{}".format(color)
-        self.enableButton.setStyleSheet(style)
-        self.enableButton.setCheckable(True)
+        self.enable_button.setStyleSheet(style)
+        self.enable_button.setCheckable(True)
         self.name.setStyleSheet(style)
         if(prange is None):
             prange = (0, 1023)
@@ -208,9 +209,9 @@ class AOTFControl(QtGui.QFrame):
         grid = QtGui.QGridLayout()
         self.setLayout(grid)
         grid.addWidget(self.name, 0, 0)
-        grid.addWidget(self.powerIndicator, 3, 0)
-        grid.addWidget(self.setPointEdit, 4, 0)
-        grid.addWidget(self.enableButton, 5, 0)
+        grid.addWidget(self.power_indicator, 3, 0)
+        grid.addWidget(self.set_point_edit, 4, 0)
+        grid.addWidget(self.enable_button, 5, 0)
         grid.addWidget(self.maxpower, 1, 1)
         grid.addWidget(self.slider, 2, 1, 5, 1)
         grid.addWidget(self.minpower, 7, 1)
@@ -218,28 +219,20 @@ class AOTFControl(QtGui.QFrame):
         grid.setRowMinimumHeight(6, 60)
 
         # Connections
-        self.enableButton.toggled.connect(self.toggleLaser)
+        self.enable_button.toggled.connect(self.toggleLaser)
         self.slider.valueChanged[int].connect(self.changeSlider)
-        self.setPointEdit.returnPressed.connect(self.changeEdit)
+        self.set_point_edit.returnPressed.connect(self.changeEdit)
 
     def toggleLaser(self):
-        if self.enableButton.isChecked():
+        if self.enable_button.isChecked():
             self.enableLaser()
         else:
             self.disableLaser()
 
-    def digitalMod(self):
-        if self.digimodButton.isChecked():
-            self.laser.digital_mod = True
-            self.laser.enter_mod_mode()
-            print(self.laser.mod_mode)
-        else:
-            self.laser.query('cp')
-
     def enableLaser(self):
         """Turns on the laser, sets its power to the value specified by the textbox."""
         self.aotf.channelOn(self.channel, 1)
-        self.aotf.power(self.channel, float(self.setPointEdit.text()))
+        self.aotf.power(self.channel, float(self.set_point_edit.text()))
         
     def disableLaser(self):
         """Turns off the laser."""
@@ -248,13 +241,13 @@ class AOTFControl(QtGui.QFrame):
     def changeSlider(self, value):
         """called when the slider is moved, sets the power of the laser to value"""
         self.aotf.power(self.channel, self.slider.value())
-        self.setPointEdit.setText(str(round(self.slider.value())))
+        self.set_point_edit.setText(str(round(self.slider.value())))
 
     def changeEdit(self):
         """called when the user manually changes the intensity value of the laser.
         Sets the laser power to the corresponding value"""
-        self.aotf.power(self.channel, int(self.setPointEdit.text()))
-        self.slider.setValue(float(self.setPointEdit.text()))
+        self.aotf.power(self.channel, int(self.set_point_edit.text()))
+        self.slider.setValue(float(self.set_point_edit.text()))
         
     def getOutPower(self, p_setting):
         """Get the output power in uW when given a AOTF power setting value in
