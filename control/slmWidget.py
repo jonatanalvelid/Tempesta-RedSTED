@@ -88,18 +88,18 @@ class SlmWidget(QtGui.QFrame):
 
         # Link between the buttons in the arrow module and the functions to
         # control the SLM
-        self.arrows_module.upButton.clicked.connect(self.up_clicked)
-        self.arrows_module.downButton.clicked.connect(self.down_clicked)
-        self.arrows_module.leftButton.clicked.connect(self.left_clicked)
-        self.arrows_module.rightButton.clicked.connect(self.right_clicked)
-        self.arrows_module.saveButton.clicked.connect(self.save_param)
-        self.arrows_module.loadButton.clicked.connect(self.load_param)
-        self.arrows_module.blackButton.clicked.connect(self.set_black)
-        self.arrows_module.gaussiansButton.clicked.connect(self.set_gaussians)
-        self.arrows_module.halfButton.clicked.connect(self.set_half)
-        self.arrows_module.quadrantButton.clicked.connect(self.set_quadrant)
-        self.arrows_module.hexButton.clicked.connect(self.set_hex)
-        self.arrows_module.splitbullButton.clicked.connect(self.set_split)
+        self.arrows_module.up_button.clicked.connect(self.up_clicked)
+        self.arrows_module.down_button.clicked.connect(self.down_clicked)
+        self.arrows_module.left_button.clicked.connect(self.left_clicked)
+        self.arrows_module.right_button.clicked.connect(self.right_clicked)
+        self.arrows_module.save_button.clicked.connect(self.save_param)
+        self.arrows_module.load_button.clicked.connect(self.load_param)
+        self.arrows_module.black_button.clicked.connect(self.set_black)
+        self.arrows_module.gaussians_button.clicked.connect(self.set_gaussians)
+        self.arrows_module.half_button.clicked.connect(self.set_half)
+        self.arrows_module.quadrant_button.clicked.connect(self.set_quadrant)
+        self.arrows_module.hex_button.clicked.connect(self.set_hex)
+        self.arrows_module.splitbull_button.clicked.connect(self.set_split)
 
         # GUI layout
         grid = QtGui.QGridLayout()
@@ -523,8 +523,6 @@ class ArrowsControl(QtGui.QFrame):
 
         self.left_button = QtGui.QPushButton('Left (XZ)')
         self.left_button.setCheckable(False)
-        self.left_button.setSizePolicy(QtGui.QSizePolicy.Preferred,
-                                       QtGui.QSizePolicy.Expanding)
         self.left_button.setFixedSize(self.up_button.sizeHint())
 
         self.right_button = QtGui.QPushButton('Right (XZ)')
@@ -564,10 +562,10 @@ class ArrowsControl(QtGui.QFrame):
         self.right_pattern_box = QtGui.QCheckBox('Modify right')
 
         self.arrow_layout.addWidget(self.up_button, 1, 1)
-        self.arrow_layout.addWidget(self.down_button, 3, 1)
         self.arrow_layout.addWidget(self.left_button, 2, 0)
-        self.arrow_layout.addWidget(self.right_button, 2, 2)
         self.arrow_layout.addWidget(self.increment_widget, 2, 1)
+        self.arrow_layout.addWidget(self.right_button, 2, 2)
+        self.arrow_layout.addWidget(self.down_button, 3, 1)
 
         self.arrow_layout.addWidget(self.save_button, 4, 0)
         self.arrow_layout.addWidget(self.load_button, 4, 1)
