@@ -64,8 +64,8 @@ class TilingWidget(QtGui.QFrame):
         self.nextTileButton = QtGui.QPushButton('Next tile')
         self.nextTileButton.clicked.connect(self.nexttile)
 
-        self.mockFocusButton = QtGui.QPushButton('Mock focus')
-        self.mockFocusButton.clicked.connect(self.focusWidget.tilingStep)
+        #self.mockFocusButton = QtGui.QPushButton('Mock focus')
+        #self.mockFocusButton.clicked.connect(self.focusWidget.tilingStep)
 
         # Add status bar, a non-editable text, that tells the current state
         self.statusLabel = QtGui.QLabel('Status:')
@@ -97,7 +97,7 @@ class TilingWidget(QtGui.QFrame):
         grid.addWidget(self.initTilingButton, 4, 3)
         grid.addWidget(self.nextTileButton, 4, 4)
 
-        grid.addWidget(self.mockFocusButton, 5, 0)
+        #grid.addWidget(self.mockFocusButton, 5, 0)
         grid.addWidget(self.tilingFocusCheckBox, 5, 3)
         grid.addWidget(self.tilingSavedFociCheckBox, 5, 4)
         grid.addWidget(self.automaticTilingCheckBox, 5, 2)

@@ -15,12 +15,13 @@ import control.SLM.PhaseMask as pm
 from PIL import Image
 import glob
 
+
 s_pix = 0.02  # pixel size in mm (SLM)
 # Path to the correction files for the SLM
-path_to_correction = u"C:\\Users\\STEDRed\\Documents\\HamamatsuSLM\\deform_corr_patterns\\"
+path_to_correction = u"C:\\Users\\jonatan.alvelid\\Documents\\SLM\\SLM_deformation_correction_pattern\\"
 
 # Getting the list of the correction wavelength
-correction_list = glob.glob(path_to_correction + "\*.bmp")
+correction_list = glob.glob(path_to_correction + r"\*.bmp")
 correction_wavelength = [int(x[-9: -6]) for x in correction_list]
 
 
