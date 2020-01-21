@@ -89,6 +89,7 @@ class MockKatanaLaser(object):
         self.info = None
         self.power_setting = 0  # To change the power with python
         self.intensity_max = intensity_max
+        self.maxPower = self.intensity_max
         self.mode = 0  # Constant current or Power
         self.triggerMode = 0  # Trigger=TTL input
         self.enabled_state = False  # Laser initially off
