@@ -239,7 +239,7 @@ class MockSLM(object):
         pass
 
 
-class MockLeicaZDrive(object):
+class MockLeicaDMI(object):
 
     def __init__(self, SerialDriver=0):
         super().__init__()

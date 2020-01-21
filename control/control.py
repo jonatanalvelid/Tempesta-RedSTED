@@ -6,53 +6,60 @@ Created on Mon Jan 23 15:21:07 2017
 """
 
 # General imports
-import os
+#import os
 #import time
 
 # Scientific python packages and software imports
 from pyqtgraph.Qt import QtCore, QtGui
 from pyqtgraph.dockarea import Dock, DockArea
-from lantz import Q_
 import specpy as sp
 
 # Tempesta control imports
-from control import LaserWidget, focus, widefield, tiling, timelapse, slmWidget, guitools, motcorr
+from control import LaserWidget, focus, widefield, tiling, timelapse, SlmWidget, guitools, motcorr
 
 #DATAPATH = r"C:\\Users\\STEDred\Documents\defaultTempestaData"
 
 
 class FileWarning(QtGui.QMessageBox):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    """Raise when FileWarning occurs."""
+
+    # pylint: disable=too-few-public-methods
+    # It is okay here.
+
+    pass
 
 
 class TempestaSLMKatanaGUI(QtGui.QMainWindow):
     """Main GUI class. This class calls other modules in the control folder
 
-    :param Laser greenlaser: object controlling one laser
-    :param Laser redlaser: object controlling one laser
-    :param Laser stedlaser: object controlling one laser
-    :param Camera orcaflash: object controlling a CCD camera
+    :param AOTF aotf: object controlling an AOTF
     :param SLMdisplay slm: object controlling a SLM
     :param Scanner scanXY: object controlling a Marzhauser XY-scanning stage
     :param Scanner scanZ: object controlling a Piezoconcept Z-scanning inset
+    :param LeicaStand leicastand: object controlling a Leica DMi8 microscope stand
     """
+
+    # pylint: disable=too-few-public-methods, too-many-instance-attributes
+    # It is okay here.
 
     liveviewStarts = QtCore.pyqtSignal()
     liveviewEnds = QtCore.pyqtSignal()
 
-    def __init__(self, stedlaser, slm, scanZ, scanXY, webcamFocusLock,
-                 webcamWidefield, aotf, leicastand, *args, **kwargs):
+    def __init__(self, sted_laser, slm, scan_z, scan_xy, webcam_focus_lock,
+                 webcam_widefield, aotf, leica_stand, *args, **kwargs):
+
+        # pylint: disable=too-many-arguments, too-many-locals
+        # It is okay here.
 
         super().__init__(*args, **kwargs)
 
         # os.chdir('C:\\Users\\STEDred\Documents\TempestaSnapshots')
 
         self.slm = slm
-        self.scan_z = scanZ
+        self.scan_z = scan_z
         self.aotf = aotf
-        self.scan_xy = scanXY
-        self.dmi8 = leicastand
+        self.scan_xy = scan_xy
+        self.dmi8 = leica_stand
         self.imspector = sp.Imspector()
 
         self.filewarning = FileWarning()
@@ -111,26 +118,26 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
 
         # Laser Widget
         laser_dock = Dock("Laser Control", size=(400, 500))
-        self.lasers = stedlaser
+        self.lasers = sted_laser
         self.laser_widgets = LaserWidget.LaserWidget(self.lasers, self.aotf)
         laser_dock.addWidget(self.laser_widgets)
         dock_area.addDock(laser_dock, 'right')
 
         # SLM widget
         slm_dock = Dock("SLM", size=(400, 300))
-        self.slm_widget = slmWidget.slmWidget(self.slm)
+        self.slm_widget = SlmWidget.SlmWidget(self.slm)
         slm_dock.addWidget(self.slm_widget)
         dock_area.addDock(slm_dock, "bottom", laser_dock)
 
         # Widefield camera widget
         widefield_dock = Dock("Widefield", size=(500, 500))
-        self.widefield_widget = widefield.WidefieldWidget(webcamWidefield)
+        self.widefield_widget = widefield.WidefieldWidget(webcam_widefield)
         widefield_dock.addWidget(self.widefield_widget)
         dock_area.addDock(widefield_dock, "left")
 
         # Focus lock widget
         focus_dock = Dock("Focus lock", size=(500, 500))
-        self.focus_widget = focus.FocusWidget(self.scan_z, webcamFocusLock,
+        self.focus_widget = focus.FocusWidget(self.scan_z, webcam_focus_lock,
                                               self.imspector)
         focus_dock.addWidget(self.focus_widget)
         dock_area.addDock(focus_dock, "below", widefield_dock)

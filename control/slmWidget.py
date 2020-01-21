@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 
+import pickle
 import numpy as np
-import control.SLM.slmpy as slmpy
-# import control.instruments as instruments
+from control.SLM import slmpy
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui
-import control.SLM.Mask as Mask
+from control.SLM import Mask
 from pyqtgraph.parametertree import Parameter, ParameterTree
-import pickle
+# from control import instruments
 
 # Width and height of the SLM which can change from one device to another:
-m = 600
-n = 792
+M = 600
+N = 792
 
 
-class slmWidget(QtGui.QFrame):
+class SlmWidget(QtGui.QFrame):
     """Class creating a GUI to control the phase pattern displayed by the SLM.
     In this version, it is optimized to display and address 2 masks
     independently. The whole image is separated in two: one left part and
@@ -71,10 +71,10 @@ class slmWidget(QtGui.QFrame):
                                              self.fTHOblAstPar.value()])
 
         self.slm = slm
-        self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(),
+        self.maskMask = Mask.Helix_Hat(M, N, self.lbdPar.value(),
                                        self.RPar.value(),
                                        self.sigmaPar.value())
-        self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(),
+        self.maskAber = Mask.Aberrations(M, N, self.lbdPar.value(),
                                          self.RPar.value(),
                                          self.sigmaPar.value(),
                                          self.DaberrationFactors,
@@ -210,12 +210,12 @@ class slmWidget(QtGui.QFrame):
         """Sets the current masks to Gaussian masks, with the same center.
         Useful for alignment."""
         """
-        self.mask=Mask.Gaussians(m,n,self.lbdPar.value(),self.RPar.value(),self.sigmaPar.value());
+        self.mask=Mask.Gaussians(M,N,self.lbdPar.value(),self.RPar.value(),self.sigmaPar.value());
         self.mask.tilt(self.anglePar.value()
         """
         # self.loadParamGaussian()
         self.gaussiansBool = True
-        self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(),
+        self.maskMask = Mask.Gaussians(M, N, self.lbdPar.value(),
                                        self.RPar.value(),
                                        self.sigmaPar.value(),
                                        self.left_center,
@@ -228,7 +228,7 @@ class slmWidget(QtGui.QFrame):
     def setHalf(self):
         """Sets the current masks to half masks, with the same center,
         for accurate center position determination."""
-        self.maskMask = Mask.Half(m, n, self.lbdPar.value(),
+        self.maskMask = Mask.Half(M, N, self.lbdPar.value(),
                                   self.RPar.value(),
                                   self.sigmaPar.value(),
                                   self.left_center,
@@ -241,7 +241,7 @@ class slmWidget(QtGui.QFrame):
     def setQuadrant(self):
         """Sets the current masks to quadrant masks, with the same center,
         for astigmatism aberration determination."""
-        self.maskMask = Mask.Quad(m, n, self.lbdPar.value(),
+        self.maskMask = Mask.Quad(M, N, self.lbdPar.value(),
                                   self.RPar.value(),
                                   self.sigmaPar.value(),
                                   self.left_center,
@@ -254,7 +254,7 @@ class slmWidget(QtGui.QFrame):
     def setHex(self):
         """Sets the current masks to hexagonal masks, with the same center,
         for trefoil aberration determination."""
-        self.maskMask = Mask.Hex(m, n, self.lbdPar.value(),
+        self.maskMask = Mask.Hex(M, N, self.lbdPar.value(),
                                  self.RPar.value(),
                                  self.sigmaPar.value(),
                                  self.left_center,
@@ -267,7 +267,7 @@ class slmWidget(QtGui.QFrame):
     def setSplit(self):
         """Sets the current masks to split bullseye masks, with the same
         center, for coma aberration determination."""
-        self.maskMask = Mask.Split(m, n, self.lbdPar.value(),
+        self.maskMask = Mask.Split(M, N, self.lbdPar.value(),
                                    self.RPar.value(),
                                    self.sigmaPar.value(),
                                    self.left_center,
@@ -316,20 +316,20 @@ class slmWidget(QtGui.QFrame):
                                              self.fTHOblAstPar.value()])
 
         if self.gaussiansBool:
-            self.maskMask = Mask.Gaussians(m, n, self.lbdPar.value(),
+            self.maskMask = Mask.Gaussians(M, N, self.lbdPar.value(),
                                            self.RPar.value(),
                                            self.sigmaPar.value(),
                                            left_pos=self.left_center,
                                            right_pos=self.right_center)
         else:
-            self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(),
+            self.maskMask = Mask.Helix_Hat(M, N, self.lbdPar.value(),
                                            self.RPar.value(),
                                            self.sigmaPar.value(),
                                            self.left_center,
                                            self.right_center,
                                            self.helix_rotPar.value())
         self.maskMask.tilt(self.anglePar.value())
-        self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(),
+        self.maskAber = Mask.Aberrations(M, N, self.lbdPar.value(),
                                          self.RPar.value(),
                                          self.sigmaPar.value(),
                                          self.DaberrationFactors,
@@ -455,13 +455,13 @@ class slmWidget(QtGui.QFrame):
         self.left_center = mask_state["left_center"]
         self.right_center = mask_state["right_center"]
 
-        self.maskMask = Mask.Helix_Hat(m, n, self.lbdPar.value(),
+        self.maskMask = Mask.Helix_Hat(M, N, self.lbdPar.value(),
                                        self.RPar.value(),
                                        self.sigmaPar.value(),
                                        left_pos=self.left_center,
                                        right_pos=self.right_center)
         self.maskMask.tilt(self.anglePar.value())
-        self.maskAber = Mask.Aberrations(m, n, self.lbdPar.value(),
+        self.maskAber = Mask.Aberrations(M, N, self.lbdPar.value(),
                                          self.RPar.value(),
                                          self.sigmaPar.value(),
                                          self.DaberrationFactors,
