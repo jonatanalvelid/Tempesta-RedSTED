@@ -2,8 +2,8 @@
 
 import pickle
 import numpy as np
-from control.SLM import slmpy
 import pyqtgraph as pg
+from control.SLM import slmpy
 from pyqtgraph.Qt import QtGui
 from control.SLM import Mask
 from pyqtgraph.parametertree import Parameter, ParameterTree

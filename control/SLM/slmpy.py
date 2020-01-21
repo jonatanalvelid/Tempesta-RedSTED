@@ -37,6 +37,8 @@ class SLMframe(wx.Frame):
         self.isImageLock = isImageLock
         # Create the frame
         # wx.Frame.__init__(self,None,-1,'SLM window',pos = (self._x0, self._y0), size = (self._resX, self._resY))
+        if wx.Display.GetCount() == 1:
+            monitor = 0
         self.SetMonitor(monitor)
         # Set the frame to the position and size of the target monito
         wx.Frame.__init__(self, None, -1, 'SLM window', pos=(self._x0, self._y0), size=(self._resX, self._resY))
@@ -45,8 +47,9 @@ class SLMframe(wx.Frame):
         self.clientSize = self.GetClientSize()
         # Update the image upon receiving an event EVT_NEW_IMAGE
         self.Bind(EVT_NEW_IMAGE, self.UpdateImage)
-        # Set full screen
-        self.ShowFullScreen(not self.IsFullScreen(), wx.FULLSCREEN_ALL)
+        # Set full screen (if there are multiple screens)
+        if wx.Display.GetCount() != 1:
+            self.ShowFullScreen(not self.IsFullScreen(), wx.FULLSCREEN_ALL)
         self.SetFocus()
 
     def InitBuffer(self):
