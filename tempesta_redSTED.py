@@ -6,23 +6,12 @@ Created on Mon Jan 23 15:20:04 2017
 """
 
 from pyqtgraph.Qt import QtGui
+from control import control, instruments
 
 def main():
     """Main function. Instantiate main hardware components, and send these to the main GUI.
     """
-
-    from control import control, instruments
-
     app = QtGui.QApplication([])
-
-#TO DO: create an instruments.Camera(hamamatsu) or something similar
-
-#    with instruments.Camera('hamamatsu.hamamatsu_camera.HamamatsuCameraMR') as orcaflash, \
-#    with instruments.OneFiveLaser(intensity_max=30) as katanalaser, \
-#         instruments.SLM() as slm, \
-#         instruments.ScanZ('COM19') as scanZ, \
-#         instruments.XYStage('COM20') as scanXY, \
-#         instruments.AOTF('COM18') as aotf:
 
     leica_stand = instruments.LeicaStand('COM9')
     katana_laser = instruments.KatanaLaser('COM8')

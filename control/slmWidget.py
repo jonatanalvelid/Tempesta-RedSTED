@@ -2,16 +2,12 @@
 
 import pickle
 import numpy as np
-from control.SLM import slmpy
-# import control.instruments as instruments
 import pyqtgraph as pg
-from control.SLM import slmpy
 from pyqtgraph.Qt import QtGui
-from control.SLM import Mask
 from pyqtgraph.parametertree import Parameter, ParameterTree
-# from control import instruments
 from pyqtgraph.dockarea import Dock, DockArea
-import pickle
+from control.SLM import slmpy, Mask
+# from control import instruments
 
 # Width and height of the SLM which can change from one device to another:
 M = 600
@@ -77,8 +73,8 @@ class SlmWidget(QtGui.QFrame):
         self.applyAberPar.sigStateChanged.connect(self.apply)
 
         # Widget displaying the phase pattern displayed on the SLM
-        imageWidget = pg.GraphicsLayoutWidget()
-        self.vb = imageWidget.addViewBox(row=1, col=1)
+        image_widget = pg.GraphicsLayoutWidget()
+        self.vb = image_widget.addViewBox(row=1, col=1)
         self.img = pg.ImageItem()
         image = self.mask.img
         image = np.fliplr(image.transpose())
@@ -88,22 +84,22 @@ class SlmWidget(QtGui.QFrame):
         self.vb.setAspectLocked(True)
         self.slm.updateArray(self.mask)
 
-        self.arrowsModule = ArrowsControl()
+        self.arrows_module = ArrowsControl()
 
         # Link between the buttons in the arrow module and the functions to
         # control the SLM
-        self.arrowsModule.upButton.clicked.connect(self.upClicked)
-        self.arrowsModule.downButton.clicked.connect(self.downClicked)
-        self.arrowsModule.leftButton.clicked.connect(self.leftClicked)
-        self.arrowsModule.rightButton.clicked.connect(self.rightClicked)
-        self.arrowsModule.saveButton.clicked.connect(self.saveParam)
-        self.arrowsModule.loadButton.clicked.connect(self.loadParam)
-        self.arrowsModule.blackButton.clicked.connect(self.setBlack)
-        self.arrowsModule.gaussiansButton.clicked.connect(self.setGaussians)
-        self.arrowsModule.halfButton.clicked.connect(self.setHalf)
-        self.arrowsModule.quadrantButton.clicked.connect(self.setQuadrant)
-        self.arrowsModule.hexButton.clicked.connect(self.setHex)
-        self.arrowsModule.splitbullButton.clicked.connect(self.setSplit)
+        self.arrows_module.upButton.clicked.connect(self.up_clicked)
+        self.arrows_module.downButton.clicked.connect(self.down_clicked)
+        self.arrows_module.leftButton.clicked.connect(self.left_clicked)
+        self.arrows_module.rightButton.clicked.connect(self.right_clicked)
+        self.arrows_module.saveButton.clicked.connect(self.save_param)
+        self.arrows_module.loadButton.clicked.connect(self.load_param)
+        self.arrows_module.blackButton.clicked.connect(self.set_black)
+        self.arrows_module.gaussiansButton.clicked.connect(self.set_gaussians)
+        self.arrows_module.halfButton.clicked.connect(self.set_half)
+        self.arrows_module.quadrantButton.clicked.connect(self.set_quadrant)
+        self.arrows_module.hexButton.clicked.connect(self.set_hex)
+        self.arrows_module.splitbullButton.clicked.connect(self.set_split)
 
         # GUI layout
         grid = QtGui.QGridLayout()
@@ -121,10 +117,10 @@ class SlmWidget(QtGui.QFrame):
         dock_area.addDock(paramtree_aberr_dock, "above", paramtree_dock)
 
         grid.addWidget(dock_area, 0, 0, 2, 2)
-        grid.addWidget(imageWidget, 0, 2, 1, 3)
+        grid.addWidget(image_widget, 0, 2, 1, 3)
 #        grid.addWidget(self.treeAber, 1, 0, 1, 1)
 #        grid.addWidget(self.tree, 2, 0, 1, 1)
-        grid.addWidget(self.arrowsModule, 1, 2, 1, 3)
+        grid.addWidget(self.arrows_module, 1, 2, 1, 3)
 
 #        grid.setColumnMinimumWidth(1, 50)
 #        grid.setColumnMinimumWidth(0, 50)
@@ -132,32 +128,32 @@ class SlmWidget(QtGui.QFrame):
 #        grid.setRowMinimumHeight(1, 200)
 #        grid.setRowMinimumHeight(2, 50)
 
-    def upClicked(self):
+    def up_clicked(self):
         """Moves the current Mask up"""
-        self.moveMask(-1 * self.arrowsModule.increment.value(), 0)
+        self.move_mask(-1 * self.arrows_module.increment.value(), 0)
 
-    def downClicked(self):
+    def down_clicked(self):
         """Moves the current Mask down"""
-        self.moveMask(self.arrowsModule.increment.value(), 0)
+        self.move_mask(self.arrows_module.increment.value(), 0)
 
-    def leftClicked(self):
+    def left_clicked(self):
         """Moves the current Mask left"""
-        self.moveMask(0, -1 * self.arrowsModule.increment.value())
+        self.move_mask(0, -1 * self.arrows_module.increment.value())
 
-    def rightClicked(self):
+    def right_clicked(self):
         """Moves the current Mask right"""
-        self.moveMask(0, self.arrowsModule.increment.value())
+        self.move_mask(0, self.arrows_module.increment.value())
 
-    def moveMask(self, x, y):
+    def move_mask(self, x, y):
         """Sends instruction to both the SLM and the display to move the
         corresponding mask when one arrow is pressed.
         :param int x: new x position of the center of the Mask
         :param int y: new y position of the center of the Mask"""
 
-        if(str(self.arrowsModule.maskMenu.currentText()) == "Donut"):
+        if str(self.arrows_module.mask_menu.currentText()) == "Donut":
             self.maskMask.moveLeft(x, y)
             self.maskAber.moveLeft(x, y)
-        elif(str(self.arrowsModule.maskMenu.currentText()) == "Top hat"):
+        elif str(self.arrows_module.mask_menu.currentText()) == "Top hat":
             self.maskMask.moveRight(x, y)
             self.maskAber.moveRight(x, y)
         else:
@@ -166,18 +162,14 @@ class SlmWidget(QtGui.QFrame):
         self.maskAber.update()
         self.update()
 
-
-        ### I AM HERE ###
-
-
-    def setBlack(self):
+    def set_black(self):
         """Sets the current mask to a black (null phase) Mask.
         Useful to check the masks one by one"""
-        if(str(self.arrowsModule.maskMenu.currentText()) == "Donut"):
+        if str(self.arrows_module.mask_menu.currentText()) == "Donut":
             self.maskMask.left.setBlack()
             self.maskAber.left.setBlack()
             self.black_left = True
-        elif(str(self.arrowsModule.maskMenu.currentText()) == "Top hat"):
+        elif str(self.arrows_module.mask_menu.currentText()) == "Top hat":
             self.maskMask.right.setBlack()
             self.maskAber.right.setBlack()
             self.black_right = True
@@ -187,7 +179,7 @@ class SlmWidget(QtGui.QFrame):
         self.maskAber.update()
         self.update()
 
-    def setGaussians(self):
+    def set_gaussians(self):
         """Sets the current masks to Gaussian masks, with the same center.
         Useful for alignment."""
         self.gaussiansBool = True
@@ -200,7 +192,7 @@ class SlmWidget(QtGui.QFrame):
         self.maskMask.update()
         self.update()
 
-    def setHalf(self):
+    def set_half(self):
         """Sets the current masks to half masks, with the same center,
         for accurate center position determination."""
         self.maskMask = Mask.Half(M, N, self.lbdPar.value(),
@@ -208,12 +200,12 @@ class SlmWidget(QtGui.QFrame):
                                   self.sigmaPar.value(),
                                   self.left_center,
                                   self.right_center,
-                                  np.float(self.arrowsModule.rotAngEdit.text()))
+                                  np.float(self.arrows_module.rot_ang_edit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
-    def setQuadrant(self):
+    def set_quadrant(self):
         """Sets the current masks to quadrant masks, with the same center,
         for astigmatism aberration determination."""
         self.maskMask = Mask.Quad(M, N, self.lbdPar.value(),
@@ -221,12 +213,12 @@ class SlmWidget(QtGui.QFrame):
                                   self.sigmaPar.value(),
                                   self.left_center,
                                   self.right_center,
-                                  np.float(self.arrowsModule.rotAngEdit.text()))
+                                  np.float(self.arrows_module.rot_ang_edit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
-    def setHex(self):
+    def set_hex(self):
         """Sets the current masks to hexagonal masks, with the same center,
         for trefoil aberration determination."""
         self.maskMask = Mask.Hex(M, N, self.lbdPar.value(),
@@ -234,12 +226,12 @@ class SlmWidget(QtGui.QFrame):
                                  self.sigmaPar.value(),
                                  self.left_center,
                                  self.right_center,
-                                 np.float(self.arrowsModule.rotAngEdit.text()))
+                                 np.float(self.arrows_module.rot_ang_edit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
 
-    def setSplit(self):
+    def set_split(self):
         """Sets the current masks to split bullseye masks, with the same
         center, for coma aberration determination."""
         self.maskMask = Mask.Split(M, N, self.lbdPar.value(),
@@ -247,7 +239,7 @@ class SlmWidget(QtGui.QFrame):
                                    self.sigmaPar.value(),
                                    self.left_center,
                                    self.right_center,
-                                   np.float(self.arrowsModule.rotAngEdit.text()))
+                                   np.float(self.arrows_module.rot_ang_edit.text()))
         self.maskMask.tilt(self.anglePar.value())
         self.maskMask.update()
         self.update()
@@ -299,7 +291,7 @@ class SlmWidget(QtGui.QFrame):
     def closeEvent(self, *args, **kwargs):
         super().closeEvent(*args, **kwargs)
 
-    def saveParam(self):
+    def save_param(self):
         """Saves the current SLM configuration, in particular the position of
         the Masks. The informations are stored in a file 'informations.bbn'
         (arbitrary extension) with the module pickle. Separate files are
@@ -309,7 +301,7 @@ class SlmWidget(QtGui.QFrame):
                       "right_center": self.maskMask.right_center}
         stateAber = self.treeAber.p.saveState()
 
-        if(str(self.arrowsModule.objlensMenu.currentText()) == "Oil"):
+        if str(self.arrows_module.obj_lens_menu.currentText()) == "Oil":
             with open("informationsOil.bbn", "wb") as f:
                 pickler = pickle.Pickler(f)
                 pickler.dump(state)
@@ -317,7 +309,7 @@ class SlmWidget(QtGui.QFrame):
             with open("informationsAberOil.bbn", "wb") as fAber:
                 pickler = pickle.Pickler(fAber)
                 pickler.dump(stateAber)
-        elif(str(self.arrowsModule.objlensMenu.currentText()) == "Glycerol"):
+        elif str(self.arrows_module.obj_lens_menu.currentText()) == "Glycerol":
             with open("informationsGlyc.bbn", "wb") as f:
                 pickler = pickle.Pickler(f)
                 pickler.dump(state)
@@ -325,18 +317,18 @@ class SlmWidget(QtGui.QFrame):
             with open("informationsAberGlyc.bbn", "wb") as fAber:
                 pickler = pickle.Pickler(fAber)
                 pickler.dump(stateAber)
-        elif(str(self.arrowsModule.objlensMenu.currentText()) == "No objective"):
+        elif str(self.arrows_module.obj_lens_menu.currentText()) == "No objective":
             print('You have to choose an objective in the drop down menu!')
 
         print("Saved all parameters...")
         return
 
-    def loadParam(self):
+    def load_param(self):
         """Loads the parameters from a previous configuration. Depending on
         which objective is in use, load different parameter files."""
         self.gaussiansBool = False
 
-        if(str(self.arrowsModule.objlensMenu.currentText()) == "Oil"):
+        if str(self.arrows_module.obj_lens_menu.currentText()) == "Oil":
             with open('informationsOil.bbn', 'rb') as f:
                 depickler = pickle.Unpickler(f)
                 state = depickler.load()
@@ -344,7 +336,7 @@ class SlmWidget(QtGui.QFrame):
             with open('informationsAberOil.bbn', 'rb') as fAber:
                 depickler = pickle.Unpickler(fAber)
                 stateAber = depickler.load()
-        elif(str(self.arrowsModule.objlensMenu.currentText()) == "Glycerol"):
+        elif str(self.arrows_module.obj_lens_menu.currentText()) == "Glycerol":
             with open('informationsGlyc.bbn', 'rb') as f:
                 depickler = pickle.Unpickler(f)
                 state = depickler.load()
@@ -352,7 +344,7 @@ class SlmWidget(QtGui.QFrame):
             with open('informationsAberGlyc.bbn', 'rb') as fAber:
                 depickler = pickle.Unpickler(fAber)
                 stateAber = depickler.load()
-        elif(str(self.arrowsModule.objlensMenu.currentText()) == "No objective"):
+        elif str(self.arrows_module.obj_lens_menu.currentText()) == "No objective":
             print('You have to choose an objective in the drop down menu!')
             return
 
@@ -493,109 +485,111 @@ class ArrowsControl(QtGui.QFrame):
     def __init__(self, *args, **kwargs):
         # Definition of the Widget to choose left or right part of the Mask
         super().__init__(*args, **kwargs)
-        self.chooseInterface = QtGui.QWidget()
-        self.chooseInterface_layout = QtGui.QGridLayout()
-        self.chooseInterface.setLayout(self.chooseInterface_layout)
+        self.mask_choice_widget = QtGui.QWidget()
+        self.mask_choice_widget_layout = QtGui.QGridLayout()
+        self.mask_choice_widget.setLayout(self.mask_choice_widget_layout)
 
         # Choose which mask to modify
-        self.maskMenu = QtGui.QComboBox()
-        self.maskMenu.addItem("Donut")
-        self.maskMenu.addItem("Top hat")
-        self.chooseInterface_layout.addWidget(QtGui.QLabel('Select part of the mask:'), 0, 0)
-        self.chooseInterface_layout.addWidget(self.maskMenu, 0, 1)
+        self.mask_menu = QtGui.QComboBox()
+        self.mask_menu.addItem("Donut")
+        self.mask_menu.addItem("Top hat")
+        self.mask_choice_widget_layout.addWidget(QtGui.QLabel('Select part of the mask:'), 0, 0)
+        self.mask_choice_widget_layout.addWidget(self.mask_menu, 0, 1)
 
         # Choose which objective is in use
-        self.objlensMenu = QtGui.QComboBox()
-        self.objlensMenu.addItem("No objective")
-        self.objlensMenu.addItem("Oil")
-        self.objlensMenu.addItem("Glycerol")
-        self.chooseInterface_layout.addWidget(QtGui.QLabel('Select which objective is used:'), 1, 0)
-        self.chooseInterface_layout.addWidget(self.objlensMenu, 1, 1)
+        self.obj_lens_menu = QtGui.QComboBox()
+        self.obj_lens_menu.addItem("No objective")
+        self.obj_lens_menu.addItem("Oil")
+        self.obj_lens_menu.addItem("Glycerol")
+        self.mask_choice_widget_layout.addWidget(QtGui.QLabel('Select which objective is used:'), 1, 0)
+        self.mask_choice_widget_layout.addWidget(self.obj_lens_menu, 1, 1)
 
         # Defining the part with only the arrows themselves
         self.arrows = QtGui.QFrame()
         self.arrow_layout = QtGui.QGridLayout()
         self.arrows.setLayout(self.arrow_layout)
 
-        self.upButton = QtGui.QPushButton('Up (YZ)')
-        self.upButton.setCheckable(False)
-        self.upButton.setSizePolicy(QtGui.QSizePolicy.Preferred,
+        self.up_button = QtGui.QPushButton('Up (YZ)')
+        self.up_button.setCheckable(False)
+        self.up_button.setSizePolicy(QtGui.QSizePolicy.Preferred,
                                     QtGui.QSizePolicy.Expanding)
-        self.upButton.setFixedSize(self.upButton.sizeHint())
+        self.up_button.setFixedSize(self.up_button.sizeHint())
 
-        self.downButton = QtGui.QPushButton('Down (YZ)')
-        self.downButton.setCheckable(False)
-        self.downButton.setSizePolicy(QtGui.QSizePolicy.Preferred,
+        self.down_button = QtGui.QPushButton('Down (YZ)')
+        self.down_button.setCheckable(False)
+        self.down_button.setSizePolicy(QtGui.QSizePolicy.Preferred,
                                       QtGui.QSizePolicy.Expanding)
-        self.downButton.setFixedSize(self.upButton.sizeHint())
+        self.down_button.setFixedSize(self.up_button.sizeHint())
 
-        self.leftButton = QtGui.QPushButton('Left (XZ)')
-        self.leftButton.setCheckable(False)
-        self.leftButton.setFixedSize(self.upButton.sizeHint())
-
-        self.rightButton = QtGui.QPushButton('Right (XZ)')
-        self.rightButton.setCheckable(False)
-        self.rightButton.setSizePolicy(QtGui.QSizePolicy.Preferred,
+        self.left_button = QtGui.QPushButton('Left (XZ)')
+        self.left_button.setCheckable(False)
+        self.left_button.setSizePolicy(QtGui.QSizePolicy.Preferred,
                                        QtGui.QSizePolicy.Expanding)
-        self.rightButton.setFixedSize(self.upButton.sizeHint())
+        self.left_button.setFixedSize(self.up_button.sizeHint())
+
+        self.right_button = QtGui.QPushButton('Right (XZ)')
+        self.right_button.setCheckable(False)
+        self.right_button.setSizePolicy(QtGui.QSizePolicy.Preferred,
+                                       QtGui.QSizePolicy.Expanding)
+        self.right_button.setFixedSize(self.up_button.sizeHint())
 
         # Widget to change the amount of deplacement induced by the arrows
-        self.incrementWidget = QtGui.QWidget()
-        self.incrementLayout = QtGui.QVBoxLayout()
-        self.incrementWidget.setLayout(self.incrementLayout)
+        self.increment_widget = QtGui.QWidget()
+        self.increment_widget_layout = QtGui.QVBoxLayout()
+        self.increment_widget.setLayout(self.increment_widget_layout)
 
         label = QtGui.QLabel()
         label.setText("Move (px)")
         self.increment = QtGui.QSpinBox()
         self.increment.setRange(1, 500)
         self.increment.setValue(1)
-        self.incrementLayout.addWidget(label)
-        self.incrementLayout.addWidget(self.increment)
+        self.increment_widget_layout.addWidget(label)
+        self.increment_widget_layout.addWidget(self.increment)
 
-        self.saveButton = QtGui.QPushButton("Save")
-        self.loadButton = QtGui.QPushButton("Load")
+        self.save_button = QtGui.QPushButton("Save")
+        self.load_button = QtGui.QPushButton("Load")
 
-        self.blackButton = QtGui.QPushButton("Black frame")
-        self.gaussiansButton = QtGui.QPushButton("Gaussians")
+        self.black_button = QtGui.QPushButton("Black frame")
+        self.gaussians_button = QtGui.QPushButton("Gaussians")
 
-        self.halfButton = QtGui.QPushButton("Half pattern")
-        self.quadrantButton = QtGui.QPushButton("Quadrant pattern")
-        self.hexButton = QtGui.QPushButton("Hex pattern")
-        self.splitbullButton = QtGui.QPushButton("Split bullseye pattern")
+        self.half_button = QtGui.QPushButton("Half pattern")
+        self.quadrant_button = QtGui.QPushButton("Quadrant pattern")
+        self.hex_button = QtGui.QPushButton("Hex pattern")
+        self.splitbull_button = QtGui.QPushButton("Split bullseye pattern")
 
-        self.rotAngLabel = QtGui.QLabel('Pattern rotation angle [rad]')
-        self.rotAngEdit = QtGui.QLineEdit('0')
+        self.rot_ang_label = QtGui.QLabel('Pattern rotation angle [rad]')
+        self.rot_ang_edit = QtGui.QLineEdit('0')
 
-        self.leftPatternBox = QtGui.QCheckBox('Modify left')
-        self.rightPatternBox = QtGui.QCheckBox('Modify right')
+        self.left_pattern_box = QtGui.QCheckBox('Modify left')
+        self.right_pattern_box = QtGui.QCheckBox('Modify right')
 
-        self.arrow_layout.addWidget(self.upButton, 1, 1)
-        self.arrow_layout.addWidget(self.downButton, 3, 1)
-        self.arrow_layout.addWidget(self.leftButton, 2, 0)
-        self.arrow_layout.addWidget(self.rightButton, 2, 2)
-        self.arrow_layout.addWidget(self.incrementWidget, 2, 1)
+        self.arrow_layout.addWidget(self.up_button, 1, 1)
+        self.arrow_layout.addWidget(self.down_button, 3, 1)
+        self.arrow_layout.addWidget(self.left_button, 2, 0)
+        self.arrow_layout.addWidget(self.right_button, 2, 2)
+        self.arrow_layout.addWidget(self.increment_widget, 2, 1)
 
-        self.arrow_layout.addWidget(self.saveButton, 4, 0)
-        self.arrow_layout.addWidget(self.loadButton, 4, 1)
-        self.arrow_layout.addWidget(self.blackButton, 4, 2)
-        self.arrow_layout.addWidget(self.gaussiansButton, 4, 3)
+        self.arrow_layout.addWidget(self.save_button, 4, 0)
+        self.arrow_layout.addWidget(self.load_button, 4, 1)
+        self.arrow_layout.addWidget(self.black_button, 4, 2)
+        self.arrow_layout.addWidget(self.gaussians_button, 4, 3)
 
-        self.arrow_layout.addWidget(self.halfButton, 5, 0)
-        self.arrow_layout.addWidget(self.quadrantButton, 5, 1)
-        self.arrow_layout.addWidget(self.hexButton, 5, 2)
-        self.arrow_layout.addWidget(self.splitbullButton, 5, 3)
+        self.arrow_layout.addWidget(self.half_button, 5, 0)
+        self.arrow_layout.addWidget(self.quadrant_button, 5, 1)
+        self.arrow_layout.addWidget(self.hex_button, 5, 2)
+        self.arrow_layout.addWidget(self.splitbull_button, 5, 3)
 
-        self.arrow_layout.addWidget(self.rotAngLabel, 6, 0)
-        self.arrow_layout.addWidget(self.rotAngEdit, 7, 0)
+        self.arrow_layout.addWidget(self.rot_ang_label, 6, 0)
+        self.arrow_layout.addWidget(self.rot_ang_edit, 7, 0)
 
-        self.arrow_layout.addWidget(self.leftPatternBox, 6, 2)
-        self.arrow_layout.addWidget(self.rightPatternBox, 7, 2)
+        self.arrow_layout.addWidget(self.left_pattern_box, 6, 2)
+        self.arrow_layout.addWidget(self.right_pattern_box, 7, 2)
 
         # Definition of the global layout:
         self.layout = QtGui.QVBoxLayout()
         self.setLayout(self.layout)
 
-        self.layout.addWidget(self.chooseInterface)
+        self.layout.addWidget(self.mask_choice_widget)
         self.layout.addWidget(self.arrows)
 
 
