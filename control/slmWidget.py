@@ -115,8 +115,6 @@ class SlmWidget(QtGui.QFrame):
                           autoRange=True)
         self.vb.addItem(self.img)
         self.vb.setAspectLocked(True)
-#        print(self.mask)
-#        print(self.slm)
         self.slm.updateArray(self.mask)
 
         self.arrowsModule = ArrowsControl()
