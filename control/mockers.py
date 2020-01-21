@@ -413,6 +413,29 @@ class MockWebcam(object):
         pass
 
 
+class MockCameraTIS(object):
+
+    def __init__(self):
+        super().__init__()
+        print('Simulated Webcam')
+
+    def grab_image(self):
+        arr = (100 * np.random.rand(1024, 1280)).astype(np.float)
+        return arr
+
+    def setPropertyValue(self):
+        pass
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
+
+    def show_dialog(self):
+        pass
+
+
 class MockHamamatsu(Driver):
 
     def __init__(self):

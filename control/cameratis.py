@@ -6,7 +6,7 @@ Created on Tue Jan 21 14:53:00 2020
 """
 
 import numpy as np
-import control.mockers as mockers
+from control import mockers
 
 
 class CameraTIS(mockers.MockHamamatsu):
