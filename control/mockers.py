@@ -270,6 +270,36 @@ class MockLeicaDMI(object):
         pass
 
 
+class MockLeicaDMI(object):
+
+    def __init__(self, SerialDriver=0):
+        super().__init__()
+        print('Simulated Leica DMI')
+
+    def close(self):
+        pass
+
+    @Feat()
+    def absZ(self):
+        """ Absolute Z position. """
+        pass
+
+    @absZ.setter
+    def absZ(self, value):
+        """ Absolute Z position movement. """
+        pass
+
+    @Feat()
+    def relZ(self):
+        """ Absolute Z position. """
+        pass
+
+    @relZ.setter
+    def relZ(self, value):
+        """ Relative Z position movement. """
+        pass
+
+
 class MockPCZPiezo(object):
 
     def __init__(self, SerialDriver=0):

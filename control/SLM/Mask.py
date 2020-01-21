@@ -15,14 +15,13 @@ import control.SLM.PhaseMask as pm
 from PIL import Image
 import glob
 
-
-s_pix = 0.02  # pixel size in mm (SLM)
+PX_SIZE = 0.02  # pixel size in mm (SLM)
 # Path to the correction files for the SLM
-path_to_correction = u"C:\\Users\\jonatan.alvelid\\Documents\\SLM\\SLM_deformation_correction_pattern\\"
+CORR_PATH = u"C:\\Users\\jonatan.alvelid\\Documents\\SLM\\SLM_deformation_correction_pattern\\"
 
 # Getting the list of the correction wavelength
-correction_list = glob.glob(path_to_correction + r"\*.bmp")
-correction_wavelength = [int(x[-9: -6]) for x in correction_list]
+CORRECTION_LIST = glob.glob(CORR_PATH + r"\*.bmp")
+CORRECTION_WAVELENGTH = [int(x[-9: -6]) for x in CORRECTION_LIST]
 
 
 class Mask(object):
@@ -85,7 +84,7 @@ class Mask(object):
         self.img = img
         return
 
-    def loadBMP(self, name, path=path_to_correction):
+    def loadBMP(self, name, path=CORR_PATH):
         """loads a bmp image in the img of the current mask"""
         with Image.open(os.path.join(path, name + ".bmp")) as data:
             img = np.array(data)
@@ -175,11 +174,8 @@ class Mask(object):
         self.two_PiToUInt8()
         return
 
-    def aberrations(self, x=0, y=0, R=100, aberrationFactors=np.zeros(6)):
-        """replaces self.img with a top hat shape. radius corresponds to the radius
-        of the desired phase mask in pixels and sigma to the std of the gaussian beam
-        for illumination"""
-
+    def aberrations(self, x=0, y=0, R=100, aberrationFactors=np.zeros(11)):
+        """Create a mask with the aberrations"""
         self.img = pm.aberrationsMask(self.m, self.n, R, x, y, aberrationFactors)
         # Conversion into a uint8 image
         self.two_PiToUInt8()
@@ -199,7 +195,7 @@ class Mask(object):
         mask = np.indices((self.m, self.n), dtype="float")[1, :, :]
 
         # Round spatial frequency to avoid aliasing
-        f_spat = np.round(lbd / (s_pix * np.sin(angle)))
+        f_spat = np.round(lbd / (PX_SIZE * np.sin(angle)))
 
         if np.absolute(f_spat) < 3:
             print("spatial frequency:", f_spat, "pixels")
@@ -274,7 +270,7 @@ class EvMask(Mask):
         # correc corresponds to the correction automatically applied
         self.correc = Mask(m, n, lbd)
         # Find the closest correction pattern within the list of patterns available
-        lbdCorrec = min(correction_wavelength, key=lambda x: abs(x - lbd))
+        lbdCorrec = min(CORRECTION_WAVELENGTH, key=lambda x: abs(x - lbd))
         self.correc.loadBMP("CAL_LSH0701153_" + str(lbdCorrec) + "nm")
         """print("EvMask init finished")"""
 
@@ -478,20 +474,17 @@ class Gaussians(DoubleMask):
     """class creating a mask containing a helix on the left part of the chip and a top hat
     on the right part. R corresponds to the radius of each of the masks in pixels"""
     def __init__(self, m, n, lbd, R, sigma, left_pos=(0, 0), right_pos=(0, 0)):
-        """print("Gaussians init called")"""
         DoubleMask.__init__(self, m, n, lbd, left_center=left_pos, right_center=right_pos)
         self.R = R
         if self.R > min(m // 2, n // 2):
             print("R out of range")
             self.R = min(m // 2, n // 2)
 
-        "self.left.setGaussian(R,sigma,left_pos[0],left_pos[1])"
-        "self.right.setGaussian(R,sigma,right_pos[0],right_pos[1])"
+        #self.left.setGaussian(R,sigma,left_pos[0],left_pos[1])
+        #self.right.setGaussian(R,sigma,right_pos[0],right_pos[1])
         self.left.setWhite(self.R, left_pos[0], left_pos[1])
         self.right.setWhite(self.R, right_pos[0], right_pos[1])
-        """print("Gaussians init almost finished")"""
         self.update()
-        """print("Gaussians init finished")"""
 
 
 class Aberrations(DoubleMask):
