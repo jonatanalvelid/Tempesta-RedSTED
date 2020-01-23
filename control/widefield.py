@@ -6,21 +6,13 @@ Created on Fri Sep 28 17:51:28 2018
 """
 
 import os
+import time
 import numpy as np
-# import time
-# import threading
+import pyqtgraph as pg
 import scipy.ndimage as ndi
 import scipy.misc as scipym
 from skimage.transform import resize
-# from skimage.feature import peak_local_max
-import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
-# import pyqtgraph.ptime as ptime
-# from lantz import Q_
-# import control.pi as pi
-# import control.instruments as instruments
-# from instrumental import u
-import time
 
 
 class WidefieldWidget(QtGui.QFrame):
@@ -30,53 +22,53 @@ class WidefieldWidget(QtGui.QFrame):
         super().__init__(*args, **kwargs)
         self.setMinimumSize(200, 350)
 
-        self.main = main  # main va a ser RecordingWidget de control.py
+        self.main = main
         self.webcam = webcam
-        self.setPoint = 0
-        self.n = 1
+        #self.setPoint = 0
+        #self.n = 1
         self.max_dev = 0
-        self.scansPerS = 15
-        self.frameTime = 1000 / self.scansPerS
-        self.camOnVar = False
+        self.scan_freq = 15
+        self.frame_time = 1000 / self.scan_freq
+        self.cam_on_var = False
 
         # Widefield webcam graph widget
-        self.webcamGraph = WebcamGraph()
+        self.webcam_graph = WebcamGraph()
 
         # Thread for getting the data and processing it
-        self.processDataThread = ProcessDataThread(self)
-        self.processDataThread.start()
+        self.process_data_thread = ProcessDataThread(self)
+        self.process_data_thread.start()
         self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.processDataThread.update)
-        self.timer.start(self.frameTime)
+        self.timer.timeout.connect(self.process_data_thread.update)
+        self.timer.start(self.frame_time)
 
-        self.camDialogButton = QtGui.QPushButton('Camera Dialog')
-        self.camDialogButton.clicked.connect(self.webcam.show_dialog)
-        self.snapshotButton = QtGui.QPushButton('Take snapshot')
-        self.snapshotButton.clicked.connect(self.processDataThread.takeSnapshot)
-        self.camOnBox = QtGui.QCheckBox('Camera on')
+        self.cam_dialog_button = QtGui.QPushButton('Camera Dialog')
+        self.cam_dialog_button.clicked.connect(self.webcam.show_dialog)
+        self.snapshot_button = QtGui.QPushButton('Take snapshot')
+        self.snapshot_button.clicked.connect(self.process_data_thread.take_snapshot)
+        self.cam_on_box = QtGui.QCheckBox('Camera on')
 
         # GUI layout
         self.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Raised)
         grid = QtGui.QGridLayout()
         self.setLayout(grid)
-        grid.addWidget(self.webcamGraph, 0, 0, 4, 5)
-        grid.addWidget(self.camDialogButton, 4, 2, 1, 5)
-        grid.addWidget(self.camOnBox, 4, 1)
-        grid.addWidget(self.snapshotButton, 5, 2, 1, 5)
+        grid.addWidget(self.webcam_graph, 0, 0, 4, 5)
+        grid.addWidget(self.cam_dialog_button, 4, 2, 1, 5)
+        grid.addWidget(self.cam_on_box, 4, 1)
+        grid.addWidget(self.snapshot_button, 5, 2, 1, 5)
 
 #        grid.setColumnMinimumWidth(1, 100)
 #        grid.setColumnMinimumWidth(2, 40)
 #        grid.setColumnMinimumWidth(0, 100)
 
-        self.camOnBox.stateChanged.connect(self.camOnVarChange)
+        self.cam_on_box.stateChanged.connect(self.cam_on_var_change)
 
-    def camOnVarChange(self):
-        if self.camOnVar:
-            self.camOnVar = False
+    def cam_on_var_change(self):
+        if self.cam_on_var:
+            self.cam_on_var = False
             self.timer.stop()
         else:
-            self.camOnVar = True
-            self.timer.start(self.frameTime)
+            self.cam_on_var = True
+            self.timer.start(self.frame_time)
 
     def closeEvent(self, *args, **kwargs):
         super().closeEvent(*args, **kwargs)
@@ -84,24 +76,24 @@ class WidefieldWidget(QtGui.QFrame):
 
 class ProcessDataThread(QtCore.QThread):
 
-    def __init__(self, widefieldWidget, *args, **kwargs):
+    def __init__(self, widefield_widget, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.widefieldWidget = widefieldWidget
+        self.widefield_widget = widefield_widget
         # Set-up the camera settings
-        self.webcam = self.widefieldWidget.webcam
+        self.webcam = self.widefield_widget.webcam
         self.ws = {'vsub': 4, 'hsub': 4,
                    'top': None, 'bot': None,
                    'exposure_time': 10}
         # Grab camera image
-        self.webcamImage = self.webcam.grab_image()
-        self.sensorSize = np.array(self.webcamImage.shape)
-        self.snapshotwd = 'C:\\Users\\STEDred\Documents\TempestaSnapshots'
+        self.webcam_image = self.webcam.grab_image()
+        #self.sensorSize = np.array(self.webcam_image.shape)
+        self.snapshotwd = r"C:\\Users\\STEDred\\Documents\\TempestaSnapshots"
 
     def update(self):
-        if self.widefieldWidget.camOnVar:
+        if self.widefield_widget.cam_on_var:
             try:
                 # then = time.time()
-                self.webcamImage = self.webcam.grab_image()
+                self.webcam_image = self.webcam.grab_image()
                 # now = time.time()
                 # print("WF: Whole grab image took: ", now-then, " seconds")
                 # print("")
@@ -110,11 +102,11 @@ class ProcessDataThread(QtCore.QThread):
             # imagearray = np.array(self.image)
             # imagearray = resize(imagearray, (256, 320))
             # imagearraygf = ndi.filters.gaussian_filter(imagearray, 3)  # Gaussian filter the image, to remove noise.
-            self.widefieldWidget.webcamGraph.update(self.webcamImage)
+            self.widefield_widget.webcam_graph.update(self.webcam_image)
 
-    def takeSnapshot(self):
-        if self.widefieldWidget.camOnVar:
-            imagearray = np.array(self.webcamImage)
+    def take_snapshot(self):
+        if self.widefield_widget.cam_on_var:
+            imagearray = np.array(self.webcam_image)
             datetimestring = time.strftime("%Y%m%d-%H%M%S")
             # filename = datetimestring + '.txi'  # .txi for text image
             filenametiff = datetimestring + '.tiff'
@@ -203,8 +195,8 @@ class WebcamGraph(pg.GraphicsWindow):
         self.view.setAspectLocked(True)  # square pixels
         self.view.addItem(self.image)
 
-    def update(self, webcamImage):
-        self.image.setImage(webcamImage)
+    def update(self, webcam_image):
+        self.image.setImage(webcam_image)
 
 
 if __name__ == '__main__':
