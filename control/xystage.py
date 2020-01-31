@@ -114,6 +114,13 @@ class MHXYStage(SerialDriver):
         """ Set circular limits, in terms of X,Y center and radius. """
         self.query('!clim ' + str(float(xpos)) + ' ' +
                    str(float(ypos)) + ' ' + str(float(radius)))
+     
+    @Action()
+    def function_press(self):
+        """ Absolute X position movement, in um. """
+        button_status = self.query('?keyl').split()
+        button_status = list(map(int, button_status))
+        return button_status
 
     def close(self):
         self.finalize()

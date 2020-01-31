@@ -5,8 +5,9 @@ Created on Wed Apr 24 15:23:30 2019
 @author: jonatan.alvelid
 """
 
+import time
 import numpy as np
-from pyqtgraph.Qt import QtGui
+from pyqtgraph.Qt import QtCore, QtGui
 
 
 class TilingWidget(QtGui.QFrame):
@@ -29,6 +30,7 @@ class TilingWidget(QtGui.QFrame):
         self.tilefoci = np.zeros(1)  # use this array to store foci points for the tiles, initiate anew on a new tile focus check scan
         self.countrows = 0  # number of rows scanned in Imspector
         self.rowsperframe = 0  # number of rows per frame in Imspector measurement
+        joystick_update_time = 200  # (ms) update rate of the joyst functionbut
 
         self.movelengthXLabel = QtGui.QLabel('Move distance, X [um]')
         self.movelengthXEdit = QtGui.QLineEdit('0')
@@ -72,6 +74,13 @@ class TilingWidget(QtGui.QFrame):
         self.statusText = QtGui.QLineEdit(
                 'Click "Initialize tiling" to start tiling acquisition')
         self.statusText.setReadOnly(True)
+        
+        # Thread for checking if joystick function buttons are pressed
+        self.joystick_read_thread = JoystickReadThread(self)
+        self.joystick_read_thread.start()
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.joystick_read_thread.update)
+        self.timer.start(joystick_update_time)
 
         # GUI layout
         self.setFrameStyle(QtGui.QFrame.Panel | QtGui.QFrame.Raised)
@@ -267,6 +276,26 @@ class TilingWidget(QtGui.QFrame):
 
     def closeEvent(self, *args, **kwargs):
         super().closeEvent(*args, **kwargs)
+
+
+class JoystickReadThread(QtCore.QThread):
+
+    def __init__(self, tiling_widget, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.xystage = tiling_widget.xystage
+        fovsize = 200
+        self.move_dist = [-fovsize, -fovsize, fovsize, fovsize]
+
+    def update(self):
+        button_status = self.xystage.function_press()
+        for button, buttonval in enumerate(button_status):
+            if buttonval == 1:
+                print(button)
+                if button == 0 or button == 2:
+                    self.xystage.move_relY(self.move_dist[button])
+                elif button == 1 or button == 3:
+                    self.xystage.move_relX(self.move_dist[button])
 
 
 if __name__ == '__main__':
