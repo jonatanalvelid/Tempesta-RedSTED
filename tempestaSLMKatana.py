@@ -23,7 +23,7 @@ def main():
 #         instruments.XYStage('COM20') as scanXY, \
 #         instruments.AOTF('COM18') as aotf:
 
-    leicastand = instruments.LeicaStand('COM9')
+    leicastand = instruments.LeicaStand('COM10')
     katanalaser = instruments.KatanaLaser('COM8')
     scanZ = instruments.ScanZ('COM5')
     scanXY = instruments.XYStage('COM6')
