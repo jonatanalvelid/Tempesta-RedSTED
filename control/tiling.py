@@ -5,7 +5,6 @@ Created on Wed Apr 24 15:23:30 2019
 @author: jonatan.alvelid
 """
 
-import time
 import numpy as np
 from pyqtgraph.Qt import QtCore, QtGui
 
