@@ -13,4 +13,4 @@ Do not hesitate to contact me (@jonatanalvelid) for any questions regarding the 
 
 Used in the following publications:
 
-Alvelid et al., Stable STED Imaging of Extended Sample Regions, J. Phys. D: Appl. Phys. (2019), in press https://doi.org/10.1088/1361-6463/ab4c13
+Jonatan Alvelid and Ilaria Testa, Stable stimulated emission depletion imaging of extended sample regions, J. Phys. D: Appl. Phys. 53 024001 (2020), https://doi.org/10.1088/1361-6463/ab4c13
