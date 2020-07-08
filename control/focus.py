@@ -187,17 +187,26 @@ class FocusWidget(QtGui.QFrame):
             self.imspector.disconnect_end(self,1)
         else:
             # Do all the things needed to be done when you start end a z-stack
+            print('1')
             self.zStackVar = True
+            print('2')
             self.countrows = 0
+            print('3')
             
             self.immeasurement = self.imspector.active_measurement()
+            print('4')
             self.measurementparams = self.immeasurement.parameters('')
+            print('5')
 
             if self.measurementparams['Measurement']['ThdAxis'] == 'NiDAQ6353 DACs::Z':
                 print('One-color z-stack in progress!')
+                print('6')
                 self.imspector.connect_end(self,1)
+                print('7')
                 self.rowsperframe = self.measurementparams['NiDAQ6353'][':YRes']
+                print('8')
                 print(self.rowsperframe)
+                print('9')
             elif self.measurementparams['Measurement']['FthAxis'] == 'NiDAQ6353 DACs::Z':
                 print('Two-color z-stack in progress!')
                 self.imspector.connect_end(self,1)
