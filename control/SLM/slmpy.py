@@ -74,7 +74,7 @@ class SLMframe(wx.Frame):
 
 class SLMdisplay(object):
     """Interface for sending images to the display frame."""
-    def __init__(self, monitor=1, isImageLock=False):
+    def __init__(self, monitor=2, isImageLock=False):
         # Without this option, an error message appears when the windows is
         # closed, apparently due to the use of wx with pytohn3.X
         wx.DisableAsserts()
