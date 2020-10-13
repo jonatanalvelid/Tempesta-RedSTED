@@ -60,7 +60,7 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         self.aotf = aotf
         self.scanXY = scanXY
         self.dmi8 = leicastand
-        self.imspector = sp.Imspector()
+#        self.imspector = sp.Imspector()
 
         self.filewarning = FileWarning()
 
@@ -136,29 +136,28 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
 
         # Focus lock widget
         focusDock = Dock("Focus lock", size=(500, 500))
-        self.focusWidget = focus.FocusWidget(self.scanZ, webcamFocusLock,
-                                             self.imspector)
+        self.focusWidget = focus.FocusWidget(self.scanZ, webcamFocusLock) #self.imspector
         focusDock.addWidget(self.focusWidget)
         dockArea.addDock(focusDock, "below", widefieldDock)
         
-        # Timelapse widget
-        timelapseDock = Dock("Timelapse", size=(500, 200))
-        self.timelapseWidget = timelapse.TimelapseWidget(self.imspector)
-        timelapseDock.addWidget(self.timelapseWidget)
-        dockArea.addDock(timelapseDock, "top", widefieldDock)
+#        # Timelapse widget
+#        timelapseDock = Dock("Timelapse", size=(500, 200))
+#        self.timelapseWidget = timelapse.TimelapseWidget(self.imspector)
+#        timelapseDock.addWidget(self.timelapseWidget)
+#        dockArea.addDock(timelapseDock, "top", widefieldDock)
         
         # Objective mot_corr widget
         motcorrDock = Dock("Glycerol motCORR", size=(500, 200))
         self.MotcorrWidget = motcorr.MotcorrWidget(self.dmi8)
         motcorrDock.addWidget(self.MotcorrWidget)
-        dockArea.addDock(motcorrDock, "below", timelapseDock)
+        dockArea.addDock(motcorrDock, "top", widefieldDock)
         
-        # XY-scanner tiling widget
-        tilingDock = Dock("Tiling", size=(500, 200))
-        self.tilingWidget = tiling.TilingWidget(self.scanXY, self.focusWidget,
-                                                self.imspector)
-        tilingDock.addWidget(self.tilingWidget)
-        dockArea.addDock(tilingDock, "below", timelapseDock)
+#        # XY-scanner tiling widget
+#        tilingDock = Dock("Tiling", size=(500, 200))
+#        self.tilingWidget = tiling.TilingWidget(self.scanXY, self.focusWidget,
+#                                                self.imspector)
+#        tilingDock.addWidget(self.tilingWidget)
+#        dockArea.addDock(tilingDock, "top", widefieldDock)
 
 
         self.setWindowTitle('Tempesta - RedSTED edition')

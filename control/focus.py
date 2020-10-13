@@ -22,7 +22,7 @@ import control.instruments as instruments
 
 class FocusWidget(QtGui.QFrame):
 
-    def __init__(self, scanZ, webcam, imspector, main=None, *args, **kwargs):
+    def __init__(self, scanZ, webcam, main=None, *args, **kwargs): #imspector
 
         super().__init__(*args, **kwargs)
         self.setMinimumSize(200, 350)  # Set the minimum size of the widget
@@ -30,7 +30,7 @@ class FocusWidget(QtGui.QFrame):
         self.main = main
         self.z = scanZ
         self.webcam = webcam
-        self.imspector = imspector
+#        self.imspector = imspector
         self.setPoint = 0
         self.focuspoints = np.zeros(10)
         self.calibrationResult = [0, 0]
@@ -157,7 +157,7 @@ class FocusWidget(QtGui.QFrame):
 #        grid.setColumnMinimumWidth(2, 40)
 #        grid.setColumnMinimumWidth(0, 100)
 
-        self.zStackBox.stateChanged.connect(self.zStackVarChange)
+        #self.zStackBox.stateChanged.connect(self.zStackVarChange)
         self.twoFociBox.stateChanged.connect(self.twoFociVarChange)
 
     def __call__(self):
@@ -180,42 +180,42 @@ class FocusWidget(QtGui.QFrame):
             self.unlockFocus()
             self.lockButton.setText('Lock')
 
-    def zStackVarChange(self):
-        if self.zStackVar:
-            # Do all the things needed to be done when you finish end a z-stack
-            self.zStackVar = False
-            self.imspector.disconnect_end(self,1)
-        else:
-            # Do all the things needed to be done when you start end a z-stack
-            print('1')
-            self.zStackVar = True
-            print('2')
-            self.countrows = 0
-            print('3')
-            
-            self.immeasurement = self.imspector.active_measurement()
-            print('4')
-            self.measurementparams = self.immeasurement.parameters('')
-            print('5')
-
-            if self.measurementparams['Measurement']['ThdAxis'] == 'NiDAQ6353 DACs::Z':
-                print('One-color z-stack in progress!')
-                print('6')
-                self.imspector.connect_end(self,1)
-                print('7')
-                self.rowsperframe = self.measurementparams['NiDAQ6353'][':YRes']
-                print('8')
-                print(self.rowsperframe)
-                print('9')
-            elif self.measurementparams['Measurement']['FthAxis'] == 'NiDAQ6353 DACs::Z':
-                print('Two-color z-stack in progress!')
-                self.imspector.connect_end(self,1)
-                # Use double the number of rows, as we are doing two-color imaging, and as such want to take the next tile when we have scanned 2*the whole frame
-                self.rowsperframe = 2*self.measurementparams['NiDAQ6353'][':YRes']
-                print(self.rowsperframe)
-            else:
-                print('Axises in Imspector are not properly set-up for a z-stack. Double check you settings.')
-                return
+#    def zStackVarChange(self):
+#        if self.zStackVar:
+#            # Do all the things needed to be done when you finish end a z-stack
+#            self.zStackVar = False
+#            self.imspector.disconnect_end(self,1)
+#        else:
+#            # Do all the things needed to be done when you start end a z-stack
+#            print('1')
+#            self.zStackVar = True
+#            print('2')
+#            self.countrows = 0
+#            print('3')
+#            
+#            self.immeasurement = self.imspector.active_measurement()
+#            print('4')
+#            self.measurementparams = self.immeasurement.parameters('')
+#            print('5')
+#
+#            if self.measurementparams['Measurement']['ThdAxis'] == 'NiDAQ6353 DACs::Z':
+#                print('One-color z-stack in progress!')
+#                print('6')
+#                self.imspector.connect_end(self,1)
+#                print('7')
+#                self.rowsperframe = self.measurementparams['NiDAQ6353'][':YRes']
+#                print('8')
+#                print(self.rowsperframe)
+#                print('9')
+#            elif self.measurementparams['Measurement']['FthAxis'] == 'NiDAQ6353 DACs::Z':
+#                print('Two-color z-stack in progress!')
+#                self.imspector.connect_end(self,1)
+#                # Use double the number of rows, as we are doing two-color imaging, and as such want to take the next tile when we have scanned 2*the whole frame
+#                self.rowsperframe = 2*self.measurementparams['NiDAQ6353'][':YRes']
+#                print(self.rowsperframe)
+#            else:
+#                print('Axises in Imspector are not properly set-up for a z-stack. Double check you settings.')
+#                return
 
     def twoFociVarChange(self):
         if self.twoFociVar:
