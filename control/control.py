@@ -48,8 +48,10 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
     liveviewStarts = QtCore.pyqtSignal()
     liveviewEnds = QtCore.pyqtSignal()
 
+    #def __init__(self, stedlaser, slm, scanZ, scanXY, webcamFocusLock,
+    #             webcamWidefield, aotf, leicastand, *args, **kwargs):
     def __init__(self, stedlaser, slm, scanZ, scanXY, webcamFocusLock,
-                 webcamWidefield, aotf, leicastand, *args, **kwargs):
+                 aotf, leicastand, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
 
@@ -129,23 +131,25 @@ class TempestaSLMKatanaGUI(QtGui.QMainWindow):
         dockArea.addDock(slmDock, "bottom", laserDock)
 
         # Widefield camera widget
-        widefieldDock = Dock("Widefield", size=(500, 500))
-        self.widefieldWidget = widefield.WidefieldWidget(webcamWidefield)
-        widefieldDock.addWidget(self.widefieldWidget)
-        dockArea.addDock(widefieldDock, "left")
+        #widefieldDock = Dock("Widefield", size=(500, 500))
+        #self.widefieldWidget = widefield.WidefieldWidget(webcamWidefield)
+        #widefieldDock.addWidget(self.widefieldWidget)
+        #dockArea.addDock(widefieldDock, "left")
 
         # Focus lock widget
         focusDock = Dock("Focus lock", size=(500, 500))
         self.focusWidget = focus.FocusWidget(self.scanZ, webcamFocusLock,
                                              self.imspector)
         focusDock.addWidget(self.focusWidget)
-        dockArea.addDock(focusDock, "below", widefieldDock)
+        #dockArea.addDock(focusDock, "below", widefieldDock)
+        dockArea.addDock(focusDock, "left")
         
         # Timelapse widget
         timelapseDock = Dock("Timelapse", size=(500, 200))
         self.timelapseWidget = timelapse.TimelapseWidget(self.imspector)
         timelapseDock.addWidget(self.timelapseWidget)
-        dockArea.addDock(timelapseDock, "top", widefieldDock)
+        #dockArea.addDock(timelapseDock, "top", widefieldDock)
+        dockArea.addDock(timelapseDock, "top", focusDock)
         
         # Objective mot_corr widget
         motcorrDock = Dock("Glycerol motCORR", size=(500, 200))

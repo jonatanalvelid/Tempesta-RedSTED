@@ -38,11 +38,13 @@ def main():
         # sp.Imspector() as imspector:
         # print(imspector.version())
         webcamFocusLock = instruments.CameraTIS(0, 0, 0, 0)
-        webcamWidefield = instruments.CameraTIS(1, 25, 17, 725)
+        #webcamWidefield = instruments.CameraTIS(1, 25, 17, 725)
     
+        #win = control.TempestaSLMKatanaGUI(katanalaser, slm, scanZ, scanXY,
+        #                                   webcamFocusLock, webcamWidefield,
+        #                                   aotf, leicastand)
         win = control.TempestaSLMKatanaGUI(katanalaser, slm, scanZ, scanXY,
-                                           webcamFocusLock, webcamWidefield,
-                                           aotf, leicastand)
+                                           webcamFocusLock, aotf, leicastand)
         win.show()
         app.exec_()
 

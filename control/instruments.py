@@ -230,6 +230,7 @@ class CameraTIS(mockers.MockHamamatsu):
         # print(y_size)
         # frame_cropped = np.average(frame[0:0+x_size, 0:0+y_size], 2)
         # return frame_cropped
+        # print(np.mean(frame))
         return frame
 
     def setPropertyValue(self, property_name, property_value):
