@@ -281,6 +281,7 @@ class FocusWidget(QtGui.QFrame):
         self.distance = self.currentZ - self.initialZ
         self.stepDistance = self.currentZ - self.lastZ
         out = self.PI.update(self.processDataThread.focusSignal)
+        print(out)
         self.lastZ = self.currentZ
 
         if abs(self.distance) > 5 * self.um or abs(out) > 3:
@@ -441,8 +442,13 @@ class ProcessDataThread(QtCore.QThread):
 #        imagearray = imagearray[300:450,0:1310]
 #        print(np.size(imagearray))
 #        print(np.shape(imagearray))
+
         imagearray = imagearray[0:1024,730:830]
-        imagearray = np.swapaxes(imagearray,0,1)      # Swap matrix axes, after having turned the camera 90deg
+        imagearray = np.swapaxes(imagearray,0,1)  # Swap matrix axes
+
+        #imagearray = imagearray[550:630,780:1280]  # rotated 90deg
+        #imagearray = np.flipud(imagearray)  # rotated 90deg
+
         # imagearraygf = imagearray
         imagearraygf = ndi.filters.gaussian_filter(imagearray,7)     # Gaussian filter the image, to remove noise and so on, to get a better center estimate
 
