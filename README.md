@@ -11,6 +11,6 @@ Jonatan Alvelid
 
 Do not hesitate to contact me (@jonatanalvelid) for any questions regarding the code, for your own implementation or curiosity. 
 
-Used in the following publications:
+Used in the following publication:
 
 Jonatan Alvelid and Ilaria Testa, Stable stimulated emission depletion imaging of extended sample regions, J. Phys. D: Appl. Phys. 53 024001 (2020), https://doi.org/10.1088/1361-6463/ab4c13
