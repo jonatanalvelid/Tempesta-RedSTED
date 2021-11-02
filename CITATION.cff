@@ -1,0 +1,15 @@
+# YAML 1.2
+---
+authors: 
+  -
+    family-names: Alvelid
+    given-names: Jonatan
+    orcid: "https://orcid.org/0000-0002-3554-9322"
+cff-version: "1.1.0"
+date-released: 2021-11-02
+license: "GPL-3.0"
+message: "If you use this software, please cite it as below."
+repository-code: "https://github.com/jonatanalvelid/Tempesta-RedSTED"
+title: "Tempesta-RedSTED"
+version: "v1.0.0"
+...
