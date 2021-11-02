@@ -1,0 +1,8 @@
+
+*.json
+*.pyc
+*.pyc
+__pycache__/tempestaSLMKatana.cpython-37.pyc
+*.pyc
+control/__pycache__/control.cpython-37.pyc
+control/__pycache__/__init__.cpython-37.pyc
